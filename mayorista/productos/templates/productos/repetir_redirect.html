@@ -1,0 +1,5 @@
+<script>
+  const carrito = {{ carrito_json|safe }};
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  window.location.href = '/carrito/';
+</script>

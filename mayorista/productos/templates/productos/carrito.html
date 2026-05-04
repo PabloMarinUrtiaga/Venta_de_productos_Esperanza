@@ -64,6 +64,25 @@
       <a href="/productos/" class="btn btn-outline" style="width:100%; text-align:center; display:block; margin-top:0.7rem; color:#fff; border-color:rgba(255,255,255,0.3);">
         ⬅️ Seguir comprando
       </a>
+      {% if pedidos %}
+      <a href="{% url 'repetir_pedido' %}" 
+          style="
+            display:inline-block;
+            margin-bottom:1rem;
+            background:var(--verde);
+            color:white;
+            padding:0.7rem 1.2rem;
+            border-radius:6px;
+            font-weight:700;
+            text-decoration:none;
+          ">
+          🔁 Repetir último pedido
+        </a>
+      {% else %}
+        <div style="color:var(--gris); font-size:0.9rem; margin-bottom:1rem;">
+            Todavía no tenés pedidos para repetir
+          </div>
+      {% endif %}
     </div>
   </div>
 

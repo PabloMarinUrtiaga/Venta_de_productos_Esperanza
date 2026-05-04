@@ -56,9 +56,15 @@ def ver_carrito(request):
             })
         except Producto.DoesNotExist:
             pass
+    
+    pedidos = []
+    if request.user.is_authenticated:
+        pedidos = Pedido.objects.filter(user=request.user)
+    
     return render(request, 'productos/carrito.html', {
         'productos': productos,
         'total': total,
+        'pedidos': pedidos,
     })
 
 
@@ -86,6 +92,35 @@ def sincronizar_carrito(request):
         request.session['carrito'] = data.get('carrito', {})
         return JsonResponse({'ok': True})
     return JsonResponse({'ok': False})
+
+#Repetir pedido
+from django.http import JsonResponse
+
+@login_required
+def repetir_pedido(request):
+    ultimo_pedido = Pedido.objects.filter(user=request.user).order_by('-fecha').first()
+
+    if not ultimo_pedido:
+        return redirect('/perfil/')
+
+    items = PedidoItem.objects.filter(pedido=ultimo_pedido)
+
+    carrito = {}
+
+    for item in items:
+        if item.producto_id:
+            producto = item.producto
+
+            if producto.stock > 0:
+                cantidad = min(item.cantidad, producto.stock)
+                carrito[str(producto.id)] = cantidad
+
+    request.session['carrito'] = carrito
+
+    # 👇 PASAMOS EL CARRITO AL FRONT
+    return render(request, 'productos/repetir_redirect.html', {
+        'carrito_json': carrito
+    })
 
 # ── Checkout ──────────────────────────────────
 @login_required
@@ -430,7 +465,3 @@ def editar_precio(request, producto_id):
         producto.save()
 
     return redirect('/panel/')
-
-
-    
-    

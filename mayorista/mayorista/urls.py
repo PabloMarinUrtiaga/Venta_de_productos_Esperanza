@@ -5,7 +5,7 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              checkout, registro, login_view, historial,
                              logout_view, perfil, detalle_pedido, panel,
                              agregar_producto, eliminar_producto, cambiar_stock,
-                             editar_precio)
+                             editar_precio, repetir_pedido)
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -33,4 +33,5 @@ urlpatterns = [
     path('panel/eliminar/<int:producto_id>/', eliminar_producto, name='eliminar_producto'),
     path('panel/stock/<int:producto_id>/<str:accion>/', cambiar_stock, name='cambiar_stock'),
     path('panel/producto/<int:producto_id>/precio/', editar_precio, name='editar_precio'),
+    path('repetir-pedido/', repetir_pedido, name='repetir_pedido'),
 ]
