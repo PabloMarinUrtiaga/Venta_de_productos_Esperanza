@@ -1,0 +1,435 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finalizar compra — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    .checkout-wrap {
+      max-width: 960px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .checkout-wrap { grid-template-columns: 1fr; }
+    }
+
+    .checkout-section {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+    }
+
+    .checkout-section-header {
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: var(--oscuro);
+      border-left: 5px solid var(--rojo);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkout-section-body {
+      padding: 1.3rem 1.4rem;
+    }
+
+    /* Opciones de método */
+    .opcion-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    .opcion-card {
+      border: 2.5px solid #e0e0e0;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .opcion-card:hover { border-color: var(--rojo); }
+    .opcion-card.seleccionado {
+      border-color: var(--rojo);
+      background: #fff5f5;
+    }
+
+    .opcion-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .opcion-icono { font-size: 1.8rem; }
+    .opcion-titulo { font-weight: 800; font-size: 0.88rem; color: var(--oscuro); }
+    .opcion-desc { font-size: 0.75rem; color: var(--gris); font-weight: 600; }
+
+    .opcion-card.seleccionado .opcion-titulo { color: var(--rojo); }
+
+    /* Campos del form */
+    .campo { margin-bottom: 1rem; }
+    .campo label {
+      display: block;
+      font-weight: 800;
+      font-size: 0.8rem;
+      margin-bottom: 0.4rem;
+      color: var(--oscuro);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .campo input, .campo textarea, .campo select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2.5px solid #e0e0e0;
+      border-radius: var(--radio-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      color: var(--oscuro);
+      background: var(--fondo);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .campo input:focus, .campo textarea:focus, .campo select:focus {
+      border-color: var(--rojo);
+      box-shadow: 0 0 0 3px rgba(232,39,42,0.1);
+      background: var(--blanco);
+    }
+    .campo textarea { resize: vertical; min-height: 80px; }
+
+    .campo-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    /* Dirección (se muestra/oculta) */
+    #seccion-direccion { display: none; }
+    #seccion-direccion.visible { display: block; }
+
+    /* Info transferencia */
+    .info-transferencia {
+      background: #f0f7ff;
+      border: 1.5px solid #93C5FD;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1565C0;
+      display: none;
+      margin-top: 0.8rem;
+    }
+    .info-transferencia.visible { display: block; }
+    .info-transferencia p { margin-bottom: 0.3rem; }
+    .info-transferencia strong { color: #0D47A1; }
+
+    /* Info MercadoPago */
+    .info-mp {
+      background: #f0fff4;
+      border: 1.5px solid #2ECC71;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1a7a45;
+      display: none;
+      margin-top: 0.8rem;
+    }
+    .info-mp.visible { display: block; }
+
+    /* Resumen lateral */
+    .resumen-checkout {
+      background: var(--oscuro);
+      border-radius: var(--radio);
+      padding: 1.5rem;
+      color: var(--blanco);
+      position: sticky;
+      top: 88px;
+    }
+
+    .resumen-checkout h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--amarillo);
+      margin-bottom: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .resumen-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-weight: 600;
+      color: #ccc;
+    }
+    .resumen-item span:last-child { color: #fff; }
+
+    .resumen-total-co {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0 1.2rem;
+      font-weight: 800;
+    }
+    .resumen-total-co span:first-child { font-size: 0.9rem; color: #aaa; }
+    .resumen-total-co span:last-child {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--amarillo);
+      letter-spacing: 1px;
+    }
+
+    .btn-confirmar {
+      width: 100%;
+      background: linear-gradient(135deg, var(--rojo), var(--naranja));
+      color: var(--blanco);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .btn-confirmar:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-volver {
+      width: 100%;
+      background: transparent;
+      color: rgba(255,255,255,0.5);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: var(--radio-sm);
+      padding: 0.7rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      margin-top: 0.6rem;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+    .btn-volver:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <ul class="navbar-links">
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <div class="seccion-header" style="margin-top:2rem;">
+    <h2>Finalizar compra</h2>
+  </div>
+
+  <form method="POST" action="/checkout/" id="form-checkout">
+    {% csrf_token %}
+
+    <div class="checkout-wrap">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <div>
+
+        <!-- DATOS DEL CLIENTE -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">👤 Datos del cliente</div>
+          <div class="checkout-section-body">
+            <div class="campo-row">
+              <div class="campo">
+                <label>Nombre</label>
+                <input type="text" name="nombre" value="{{ request.user.first_name }}" required placeholder="Juan"/>
+              </div>
+              <div class="campo">
+                <label>Apellido</label>
+                <input type="text" name="apellido" value="{{ request.user.last_name }}" required placeholder="García"/>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Email</label>
+              <input type="email" name="email" value="{{ request.user.email }}" required placeholder="juan@email.com"/>
+            </div>
+            <div class="campo">
+              <label>Teléfono</label>
+              <input type="tel" name="telefono" value="{{ perfil.telefono }}" required placeholder="+54 9 11 1234-5678"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIPO DE ENTREGA -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">🚚 Tipo de entrega</div>
+          <div class="checkout-section-body">
+            <div class="opcion-grid">
+              <label class="opcion-card seleccionado" id="label-retiro">
+                <input type="radio" name="entrega" value="retiro" checked onchange="toggleEntrega('retiro')"/>
+                <span class="opcion-icono">🏪</span>
+                <span class="opcion-titulo">Retiro en el local</span>
+                <span class="opcion-desc">Retirás en nuestro depósito</span>
+              </label>
+              <label class="opcion-card" id="label-domicilio">
+                <input type="radio" name="entrega" value="domicilio" onchange="toggleEntrega('domicilio')"/>
+                <span class="opcion-icono">🏠</span>
+                <span class="opcion-titulo">Envío a domicilio</span>
+                <span class="opcion-desc">Te lo llevamos a tu puerta</span>
+              </label>
+            </div>
+
+            <!-- Dirección (solo si elige domicilio) -->
+            <div id="seccion-direccion">
+              <div style="height:1rem;"></div>
+              <div class="campo-row">
+                <div class="campo">
+                  <label>Calle y número</label>
+                  <input type="text" name="direccion" placeholder="Av. San Martín 1234"/>
+                </div>
+                <div class="campo">
+                  <label>Piso / Depto (opcional)</label>
+                  <input type="text" name="piso_depto" placeholder="3° B"/>
+                </div>
+              </div>
+              <div class="campo-row">
+                <div class="campo">
+                  <label>Localidad</label>
+                  <input type="text" name="localidad" placeholder="Buenos Aires"/>
+                </div>
+                <div class="campo">
+                  <label>Código postal</label>
+                  <input type="text" name="codigo_postal" placeholder="1234"/>
+                </div>
+              </div>
+              <div class="campo">
+                <label>Notas para el envío (opcional)</label>
+                <textarea name="notas_envio" placeholder="Ej: Timbre roto, llamar al llegar..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MÉTODO DE PAGO -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">💳 Método de pago</div>
+          <div class="checkout-section-body">
+            <div class="opcion-grid" style="grid-template-columns:1fr 1fr;">
+              <label class="opcion-card seleccionado" id="label-transferencia">
+                <input type="radio" name="pago" value="transferencia" checked onchange="togglePago('transferencia')"/>
+                <span class="opcion-icono">🏦</span>
+                <span class="opcion-titulo">Transferencia</span>
+                <span class="opcion-desc">CBU / Alias</span>
+              </label>
+              <label class="opcion-card" id="label-efectivo">
+                <input type="radio" name="pago" value="efectivo" onchange="togglePago('efectivo')"/>
+                <span class="opcion-icono">💵</span>
+                <span class="opcion-titulo">Efectivo</span>
+                <span class="opcion-desc">Al retirar o recibir</span>
+              </label>
+              
+            </div>
+
+            <!-- Info transferencia -->
+            <div class="info-transferencia visible" id="info-transferencia">
+              <p>📋 Realizá la transferencia a:</p>
+              <p><strong>CBU:</strong> 0000000000000000000000</p>
+              <p><strong>Alias:</strong> ESPERANZA.DIST</p>
+              <p><strong>Titular:</strong> Distribuidora Esperanza S.A.</p>
+              <p style="margin-top:0.5rem; color:#1565C0;">Una vez confirmado el pedido, envianos el comprobante por WhatsApp.</p>
+            </div>
+
+          
+
+          </div>
+        </div>
+
+        <!-- NOTAS DEL PEDIDO -->
+        <div class="checkout-section">
+          <div class="checkout-section-header">📝 Notas del pedido</div>
+          <div class="checkout-section-body">
+            <div class="campo">
+              <label>Comentarios adicionales (opcional)</label>
+              <textarea name="notas" placeholder="Ej: Necesito factura, entregar en horario de tarde..."></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: RESUMEN -->
+      <div class="resumen-checkout">
+        <h3>📦 Tu pedido</h3>
+        <div id="resumen-items">
+          {% for item in items %}
+            <div class="resumen-item">
+              <span>{{ item.nombre }} ×{{ item.cantidad }}</span>
+              <span>${{ item.subtotal }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="resumen-total-co">
+          <span>Total</span>
+          <span>${{ total }}</span>
+        </div>
+        <button type="submit" class="btn-confirmar">✅ Confirmar pedido</button>
+        <a href="/carrito/" class="btn-volver">⬅️ Volver al carrito</a>
+      </div>
+
+    </div>
+  </form>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+  <script>
+    function toggleEntrega(tipo) {
+  document.getElementById('label-retiro').classList.toggle('seleccionado', tipo === 'retiro');
+  document.getElementById('label-domicilio').classList.toggle('seleccionado', tipo === 'domicilio');
+  document.getElementById('seccion-direccion').classList.toggle('visible', tipo === 'domicilio');
+
+  // Hacer obligatorios los campos solo si es domicilio
+  const requeridos = ['direccion', 'localidad', 'codigo_postal'];
+  requeridos.forEach(nombre => {
+    const input = document.querySelector(`input[name="${nombre}"]`);
+    if (input) input.required = tipo === 'domicilio';
+  });
+}
+
+   function togglePago(tipo) {
+  ['transferencia','efectivo'].forEach(t => {
+    document.getElementById('label-' + t).classList.toggle('seleccionado', t === tipo);
+  });
+  document.getElementById('info-transferencia').classList.toggle('visible', tipo === 'transferencia');
+}
+  </script>
+
+</body>
+</html>

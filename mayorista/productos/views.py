@@ -91,32 +91,79 @@ def sincronizar_carrito(request):
 @login_required
 def checkout(request):
     carrito = request.session.get('carrito', {})
-    
-    # Si el carrito está vacío, redirigir sin crear pedido
+
     if not carrito:
         return redirect('/carrito/')
-    
+
+    # Obtener perfil del usuario
+    try:
+        perfil = Perfil.objects.get(user=request.user)
+    except Perfil.DoesNotExist:
+        perfil = None
+
+    # Preparar items para mostrar en el resumen
+    items = []
     total = 0
-    pedido = Pedido.objects.create(user=request.user, total=0)
     for producto_id, cantidad in carrito.items():
         try:
             producto = Producto.objects.get(id=producto_id)
             subtotal = producto.precio * cantidad
             total += subtotal
-            PedidoItem.objects.create(
-                pedido=pedido,
-                producto=producto,
-                cantidad=cantidad,
-                precio=producto.precio,
-            )
-            producto.stock -= cantidad
-            producto.save()
+            items.append({
+                'nombre':   producto.nombre,
+                'cantidad': cantidad,
+                'subtotal': subtotal,
+            })
         except Producto.DoesNotExist:
             pass
-    pedido.total = total
-    pedido.save()
-    request.session['carrito'] = {}
-    return render(request, 'productos/checkout.html', {'total': total})
+
+    if request.method == 'POST':
+        # Crear pedido con todos los datos del formulario
+        pedido = Pedido.objects.create(
+            user          = request.user,
+            total         = total,
+            nombre        = request.POST.get('nombre', ''),
+            apellido      = request.POST.get('apellido', ''),
+            email         = request.POST.get('email', ''),
+            telefono      = request.POST.get('telefono', ''),
+            entrega       = request.POST.get('entrega', 'retiro'),
+            direccion     = request.POST.get('direccion', ''),
+            piso_depto    = request.POST.get('piso_depto', ''),
+            localidad     = request.POST.get('localidad', ''),
+            codigo_postal = request.POST.get('codigo_postal', ''),
+            notas_envio   = request.POST.get('notas_envio', ''),
+            pago          = request.POST.get('pago', 'transferencia'),
+            notas         = request.POST.get('notas', ''),
+        )
+
+        for producto_id, cantidad in carrito.items():
+            try:
+                producto = Producto.objects.get(id=producto_id)
+                PedidoItem.objects.create(
+                    pedido   = pedido,
+                    producto = producto,
+                    cantidad = cantidad,
+                    precio   = producto.precio,
+                )
+                producto.stock -= cantidad
+                producto.save()
+            except Producto.DoesNotExist:
+                pass
+
+        request.session['carrito'] = {}
+        return render(request, 'productos/checkout.html', {
+            'total':  total,
+            'pedido': pedido,
+        })
+
+    # GET: mostrar formulario de checkout
+    return render(request, 'productos/checkout_form.html', {
+        'items':  items,
+        'total':  total,
+        'perfil': perfil,
+    })
+
+
 
 # ── Registro ──────────────────────────────────
 def registro(request):

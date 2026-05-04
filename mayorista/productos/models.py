@@ -14,10 +14,46 @@ class Producto(models.Model):
 #Checkout  
 from django.contrib.auth.models import User
 
+# ── Pedido ────────────────────────────────────
 class Pedido(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    fecha = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    ENTREGA_CHOICES = [
+        ('retiro',    'Retiro en el local'),
+        ('domicilio', 'Envío a domicilio'),
+    ]
+    PAGO_CHOICES = [
+        ('transferencia', 'Transferencia bancaria'),
+        ('efectivo',      'Efectivo'),
+        ('mercadopago',   'MercadoPago'),
+    ]
+
+    user          = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    fecha         = models.DateTimeField(auto_now_add=True)
+    total         = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Datos del cliente
+    nombre        = models.CharField(max_length=100, blank=True)
+    apellido      = models.CharField(max_length=100, blank=True)
+    email         = models.EmailField(blank=True)
+    telefono      = models.CharField(max_length=20, blank=True)
+
+    # Entrega
+    entrega       = models.CharField(max_length=20, choices=ENTREGA_CHOICES, default='retiro')
+    direccion     = models.CharField(max_length=200, blank=True)
+    piso_depto    = models.CharField(max_length=50, blank=True)
+    localidad     = models.CharField(max_length=100, blank=True)
+    codigo_postal = models.CharField(max_length=10, blank=True)
+    notas_envio   = models.TextField(blank=True)
+
+    # Pago
+    pago          = models.CharField(max_length=20, choices=PAGO_CHOICES, default='transferencia')
+
+    # Notas generales
+    notas         = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Pedido #{self.id} — {self.nombre} {self.apellido}"
+
+
 
 class PedidoItem(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)

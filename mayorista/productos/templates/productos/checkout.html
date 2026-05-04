@@ -1,5 +1,242 @@
 {% load static %}
-<h1>✅ Compra realizada</h1>
-<p>Total pagado: ${{ total }}</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedido confirmado — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    .confirm-wrap {
+      max-width: 580px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+      text-align: center;
+    }
 
-<a href="/productos&/">Volver al catálogo</a>
+    .check-icon {
+      width: 90px;
+      height: 90px;
+      background: var(--verde);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 32px rgba(46,204,113,0.4);
+      animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes pop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .confirm-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      margin-bottom: 0.4rem;
+    }
+
+    .confirm-subtitulo {
+      color: var(--gris);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+
+    .confirm-card {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      padding: 1.5rem;
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+
+    .confirm-card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: var(--oscuro);
+      border-left: 4px solid var(--rojo);
+      padding-left: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #f0f0ec;
+      font-weight: 600;
+      color: var(--gris);
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row span:last-child { color: var(--oscuro); }
+
+    .confirm-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem 0 0;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .confirm-total span:last-child {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--rojo);
+      letter-spacing: 1px;
+    }
+
+    .btn-whatsapp {
+      display: block;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 1rem 1.5rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.3px;
+    }
+    .btn-whatsapp:hover { background: #1ebe5d; transform: translateY(-1px); }
+
+    .btn-catalogo {
+      display: block;
+      background: var(--oscuro);
+      color: var(--amarillo);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.85rem 1.5rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-catalogo:hover { background: #333; transform: translateY(-1px); }
+
+    .pago-info {
+      background: #f0f7ff;
+      border: 1.5px solid #93C5FD;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1565C0;
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    .pago-info p { margin-bottom: 0.3rem; }
+    .pago-info strong { color: #0D47A1; }
+
+    .pago-efectivo {
+      background: #f0fff6;
+      border: 1.5px solid var(--verde);
+      color: #1a7a45;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <ul class="navbar-links">
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <div class="confirm-wrap">
+
+    <div class="check-icon">✅</div>
+
+    <h1 class="confirm-titulo">¡Pedido confirmado!</h1>
+    <p class="confirm-subtitulo">Pedido #{{ pedido.id }} · {{ pedido.fecha|date:"d/m/Y — H:i" }}</p>
+
+    <!-- Resumen del pedido -->
+    <div class="confirm-card">
+      <div class="confirm-card-title">Resumen</div>
+      <div class="confirm-row">
+        <span>Cliente</span>
+        <span>{{ pedido.nombre }} {{ pedido.apellido }}</span>
+      </div>
+      <div class="confirm-row">
+        <span>Email</span>
+        <span>{{ pedido.email }}</span>
+      </div>
+      <div class="confirm-row">
+        <span>Teléfono</span>
+        <span>{{ pedido.telefono }}</span>
+      </div>
+      <div class="confirm-row">
+        <span>Entrega</span>
+        <span>{% if pedido.entrega == 'domicilio' %}🏠 Envío a domicilio{% else %}🏪 Retiro en el local{% endif %}</span>
+      </div>
+      {% if pedido.entrega == 'domicilio' %}
+      <div class="confirm-row">
+        <span>Dirección</span>
+        <span>{{ pedido.direccion }}{% if pedido.piso_depto %}, {{ pedido.piso_depto }}{% endif %} — {{ pedido.localidad }}</span>
+      </div>
+      {% endif %}
+      <div class="confirm-row">
+        <span>Método de pago</span>
+        <span>{% if pedido.pago == 'transferencia' %}🏦 Transferencia{% elif pedido.pago == 'efectivo' %}💵 Efectivo{% else %}💙 MercadoPago{% endif %}</span>
+      </div>
+      <div class="confirm-total">
+        <span>Total</span>
+        <span>${{ total }}</span>
+      </div>
+    </div>
+
+    <!-- Info de pago según método -->
+    {% if pedido.pago == 'transferencia' %}
+    <div class="pago-info">
+      <p>📋 Realizá la transferencia a:</p>
+      <p><strong>CBU:</strong> 0000000000000000000000</p>
+      <p><strong>Alias:</strong> ESPERANZA.DIST</p>
+      <p><strong>Titular:</strong> Distribuidora Esperanza S.A.</p>
+      <p style="margin-top:0.5rem;">Envianos el comprobante por WhatsApp para confirmar el envío.</p>
+    </div>
+    {% elif pedido.pago == 'efectivo' %}
+    <div class="pago-info pago-efectivo">
+      <p>💵 Abonás al momento de {% if pedido.entrega == 'domicilio' %}recibir el pedido{% else %}retirar en el local{% endif %}.</p>
+    </div>
+    {% endif %}
+
+    <!-- Botón WhatsApp -->
+    {% if pedido.pago == 'transferencia' %}
+    <a href="https://wa.me/5491126868409?text=Hola!%20Te%20env%C3%ADo%20el%20comprobante.%0A%0A*Pedido%20%23{{ pedido.id }}*%0ANombre%3A%20{{ pedido.nombre }}%20{{ pedido.apellido }}%0AM%C3%A9todo%20de%20pago%3A%20Transferencia%0AEntrega%3A%20{% if pedido.entrega == 'domicilio' %}Env%C3%ADo%20a%20domicilio%20-%20{{ pedido.direccion }}{% if pedido.piso_depto %}%2C%20{{ pedido.piso_depto }}{% endif %}%2C%20{{ pedido.localidad }}%20(CP%3A%20{{ pedido.codigo_postal }}){% else %}Retiro%20en%20el%20local{% endif %}%0ATotal%3A%20%24{{ total }}%0AAdjunt%C3%A1%20el%20comprobante%20de%20pago%20a%20continuaci%C3%B3n."
+       target="_blank"
+       class="btn-whatsapp">
+      📲 Enviar comprobante por WhatsApp
+    </a>
+    {% endif %}
+
+    <a href="/productos/" class="btn-catalogo">
+      🛒 Seguir comprando
+    </a>
+
+  </div>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+</body>
+</html>
