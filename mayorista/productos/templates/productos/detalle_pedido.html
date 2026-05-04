@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedido #{{ pedido.id }} — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    .detalle-wrap {
+      max-width: 760px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+
+    .detalle-header {
+      background: var(--oscuro);
+      border-radius: var(--radio);
+      padding: 1.5rem 1.8rem;
+      color: var(--blanco);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .detalle-header-left h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--amarillo);
+      letter-spacing: 2px;
+      margin-bottom: 0.2rem;
+    }
+
+    .detalle-header-left p {
+      font-size: 0.82rem;
+      color: #aaa;
+      font-weight: 600;
+    }
+
+    .detalle-total {
+      text-align: right;
+    }
+
+    .detalle-total-lbl {
+      font-size: 0.78rem;
+      color: #aaa;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detalle-total-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      color: var(--amarillo);
+      letter-spacing: 1px;
+    }
+
+    .detalle-section {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+    }
+
+    .detalle-section-header {
+      padding: 0.9rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: var(--oscuro);
+      border-left: 5px solid var(--rojo);
+    }
+
+    .detalle-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding: 1.2rem 1.4rem;
+    }
+
+    @media (max-width: 500px) {
+      .detalle-info-grid { grid-template-columns: 1fr; }
+    }
+
+    .detalle-info-item label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .detalle-info-item span {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--oscuro);
+    }
+
+    /* Tabla de productos */
+    .items-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--gris);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .items-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 0.5rem;
+      padding: 0.8rem 1.4rem;
+      border-bottom: 1px solid #f7f7f5;
+      align-items: center;
+    }
+
+    .items-row:last-child { border-bottom: none; }
+
+    .item-nombre {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--oscuro);
+    }
+
+    .item-val {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--gris);
+    }
+
+    .item-subtotal {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      color: var(--rojo);
+      letter-spacing: 0.5px;
+    }
+
+    .detalle-footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.4rem;
+      border-top: 2px solid #f0f0ec;
+      font-weight: 800;
+    }
+
+    .detalle-footer-row span:last-child {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--rojo);
+      letter-spacing: 1px;
+    }
+
+    .badge-pago {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-transferencia { background: #EFF6FF; color: #1565C0; border: 1px solid #93C5FD; }
+    .badge-efectivo      { background: #F0FFF6; color: #1a7a45; border: 1px solid var(--verde); }
+    .badge-mercadopago   { background: #EFF6FF; color: #0070F3; border: 1px solid #93C5FD; }
+
+    .badge-retiro    { background: #FFF5E0; color: #854F0B; border: 1px solid var(--amarillo); }
+    .badge-domicilio { background: #F0FFF6; color: #1a7a45; border: 1px solid var(--verde); }
+
+    .btn-volver {
+      display: inline-block;
+      background: var(--oscuro);
+      color: var(--amarillo);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.75rem 1.5rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.92rem;
+      text-decoration: none;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-volver:hover { background: #333; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <ul class="navbar-links">
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <div class="detalle-wrap">
+
+    <!-- Header -->
+    <div class="detalle-header">
+      <div class="detalle-header-left">
+        <h1>Pedido #{{ pedido.id }}</h1>
+        <p>{{ pedido.fecha|date:"d/m/Y — H:i" }}</p>
+      </div>
+      <div class="detalle-total">
+        <div class="detalle-total-lbl">Total</div>
+        <div class="detalle-total-val">${{ pedido.total }}</div>
+      </div>
+    </div>
+
+    <!-- Datos del cliente -->
+    <div class="detalle-section">
+      <div class="detalle-section-header">👤 Datos del cliente</div>
+      <div class="detalle-info-grid">
+        <div class="detalle-info-item">
+          <label>Nombre y apellido</label>
+          <span>{{ pedido.nombre }} {{ pedido.apellido }}</span>
+        </div>
+        <div class="detalle-info-item">
+          <label>Email</label>
+          <span>{{ pedido.email }}</span>
+        </div>
+        <div class="detalle-info-item">
+          <label>Teléfono</label>
+          <span>{{ pedido.telefono }}</span>
+        </div>
+        <div class="detalle-info-item">
+          <label>Método de pago</label>
+          <span>
+            {% if pedido.pago == 'transferencia' %}
+              <span class="badge-pago badge-transferencia">🏦 Transferencia</span>
+            {% elif pedido.pago == 'efectivo' %}
+              <span class="badge-pago badge-efectivo">💵 Efectivo</span>
+            {% else %}
+              <span class="badge-pago badge-mercadopago">💙 MercadoPago</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Entrega -->
+    <div class="detalle-section">
+      <div class="detalle-section-header">🚚 Entrega</div>
+      <div class="detalle-info-grid">
+        <div class="detalle-info-item">
+          <label>Tipo de entrega</label>
+          <span>
+            {% if pedido.entrega == 'domicilio' %}
+              <span class="badge-pago badge-domicilio">🏠 Envío a domicilio</span>
+            {% else %}
+              <span class="badge-pago badge-retiro">🏪 Retiro en el local</span>
+            {% endif %}
+          </span>
+        </div>
+        {% if pedido.entrega == 'domicilio' %}
+          <div class="detalle-info-item">
+            <label>Dirección</label>
+            <span>{{ pedido.direccion }}{% if pedido.piso_depto %}, {{ pedido.piso_depto }}{% endif %}</span>
+          </div>
+          <div class="detalle-info-item">
+            <label>Localidad</label>
+            <span>{{ pedido.localidad }}</span>
+          </div>
+          <div class="detalle-info-item">
+            <label>Código postal</label>
+            <span>{{ pedido.codigo_postal }}</span>
+          </div>
+          {% if pedido.notas_envio %}
+          <div class="detalle-info-item" style="grid-column: 1 / -1;">
+            <label>Notas de envío</label>
+            <span>{{ pedido.notas_envio }}</span>
+          </div>
+          {% endif %}
+        {% endif %}
+        {% if pedido.notas %}
+        <div class="detalle-info-item" style="grid-column: 1 / -1;">
+          <label>Notas del pedido</label>
+          <span>{{ pedido.notas }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="detalle-section">
+      <div class="detalle-section-header">📦 Productos</div>
+      <div class="items-header">
+        <span>Producto</span>
+        <span>Precio unit.</span>
+        <span>Cantidad</span>
+        <span>Subtotal</span>
+      </div>
+      {% for item in items %}
+        <div class="items-row">
+          <div class="item-nombre">{{ item.producto.nombre }}</div>
+          <div class="item-val">${{ item.precio }}</div>
+          <div class="item-val">× {{ item.cantidad }}</div>
+          <div class="item-subtotal">${{ item.subtotal }}</div>
+        </div>
+      {% endfor %}
+      <div class="detalle-footer-row">
+        <span>Total</span>
+        <span>${{ pedido.total }}</span>
+      </div>
+    </div>
+
+    <a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
+
+  </div>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+</body>
+</html>

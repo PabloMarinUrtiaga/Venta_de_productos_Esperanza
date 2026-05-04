@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi perfil — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    html { height: 100%; }
+body { min-height: 100%; display: flex; flex-direction: column; }
+.perfil-wrap { flex: 1; }
+    .perfil-wrap {
+      flex: 1;
+      max-width: 860px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      width: 100%;
+    }
+
+    @media (max-width: 700px) {
+      .perfil-wrap { grid-template-columns: 1fr; }
+    }
+
+    /* Tarjeta lateral */
+    .perfil-card {
+      background: var(--oscuro);
+      border-radius: var(--radio);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--blanco);
+    }
+
+    .perfil-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--rojo), var(--naranja));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+      font-weight: 800;
+      color: var(--blanco);
+    }
+
+    .perfil-nombre {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: var(--amarillo);
+      margin-bottom: 0.2rem;
+    }
+
+    .perfil-usuario {
+      font-size: 0.82rem;
+      color: #aaa;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+    }
+
+    .perfil-badge {
+      display: inline-block;
+      background: rgba(249,193,36,0.15);
+      border: 1px solid var(--amarillo);
+      color: var(--amarillo);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .perfil-info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-size: 0.82rem;
+      color: #bbb;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .perfil-info-item:last-child { border-bottom: none; }
+    .perfil-info-item span { color: #fff; }
+
+    .btn-logout {
+      display: block;
+      width: 100%;
+      margin-top: 1.5rem;
+      background: rgba(232,39,42,0.15);
+      border: 1.5px solid var(--rojo);
+      color: var(--rojo);
+      border-radius: var(--radio-sm);
+      padding: 0.7rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .btn-logout:hover { background: rgba(232,39,42,0.28); }
+
+    /* Panel derecho */
+    .perfil-main { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .perfil-section {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+
+    .perfil-section-header {
+      padding: 1rem 1.3rem;
+      border-bottom: 1px solid #f0f0ec;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: var(--oscuro);
+      border-left: 5px solid var(--rojo);
+    }
+
+    /* Historial */
+    .pedido-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 1rem;
+      padding: 0.9rem 1.3rem;
+      border-bottom: 1px solid #f0f0ec;
+      align-items: center;
+    }
+    .pedido-row:last-child { border-bottom: none; }
+
+    .pedido-fecha {
+      font-size: 0.8rem;
+      color: var(--gris);
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .pedido-items {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--oscuro);
+    }
+
+    .pedido-total {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      color: var(--rojo);
+      letter-spacing: 1px;
+    }
+
+    .pedido-badge {
+      background: #f0fff6;
+      border: 1px solid var(--verde);
+      color: #1a7a45;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+    }
+
+    .perfil-empty {
+      padding: 2rem;
+      text-align: center;
+      color: var(--gris);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
+    
+  <!-- Panel Interno -->>
+  {% if request.user.is_staff %}
+  <a href="/panel/" class="btn-admin">
+    ⚙️ Panel interno
+  </a>
+{% endif %}
+
+    <ul class="navbar-links">
+      <li><a href="/productos/">Inicio</a></li>
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      <li>
+        <a href="/perfil/" style="color:var(--amarillo); font-size:1.3rem;" title="Mi perfil">👤</a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="perfil-wrap">
+
+    <!-- Tarjeta lateral -->
+    <div class="perfil-card">
+      <div class="perfil-avatar">
+        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+      </div>
+      <div class="perfil-nombre">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+      <div class="perfil-usuario">@{{ request.user.username }}</div>
+      <div class="perfil-badge">Cliente #{{ perfil.numero_cliente }}</div>
+
+      <div class="perfil-info-item">
+        📧 <span>{{ request.user.email }}</span>
+      </div>
+      <div class="perfil-info-item">
+        📱 <span>{{ perfil.telefono }}</span>
+      </div>
+      <div class="perfil-info-item">
+        📦 <span>{{ pedidos.count }} pedido{{ pedidos.count|pluralize }}</span>
+      </div>
+
+      <a href="/logout/" class="btn-logout">Cerrar sesión</a>
+    </div>
+
+    <!-- Panel derecho -->
+    <div class="perfil-main">
+
+      <!-- Datos personales -->
+      <div class="perfil-section">
+        <div class="perfil-section-header">Mis datos</div>
+        <div style="padding:1.2rem 1.3rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Nombre</div>
+            <div style="font-weight:700;">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Usuario</div>
+            <div style="font-weight:700;">{{ request.user.username }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Email</div>
+            <div style="font-weight:700;">{{ request.user.email }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Teléfono</div>
+            <div style="font-weight:700;">{{ perfil.telefono }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">N° de cliente</div>
+            <div style="font-weight:700;">#{{ perfil.numero_cliente }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Miembro desde</div>
+            <div style="font-weight:700;">{{ request.user.date_joined|date:"d/m/Y" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial de pedidos -->
+      <div class="perfil-section">
+        <div class="perfil-section-header">Historial de pedidos</div>
+        {% if pedidos %}
+          {% for pedido in pedidos %}
+            <div class="pedido-row">
+              <div>
+                <div class="pedido-fecha">{{ pedido.fecha|date:"d/m/Y — H:i" }}</div>
+                <div class="pedido-items">
+                  <a href="/pedido/{{ pedido.id }}/" style="color:var(--oscuro); text-decoration:none;">
+                    Pedido #{{ pedido.id }} → Ver detalles
+
+                  </a>
+                </div>
+              </div>
+              <div class="pedido-total">${{ pedido.total }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="perfil-empty">
+            📦 Todavía no realizaste ningún pedido.<br>
+            <a href="/productos/" style="color:var(--rojo); font-weight:800; text-decoration:none;">Ver catálogo →</a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+</body>
+</html>

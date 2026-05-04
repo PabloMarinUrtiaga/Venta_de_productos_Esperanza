@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ingresar — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+</head>
+<body class="login-page">
+
+  <div class="auth-card">
+
+    <div class="auth-logo" style="color:var(--oscuro);">ESPE<span style="color:var(--oscuro);">RANZA</span></div>
+    <p class="auth-subtitulo">Distribuidora Mayorista de Alimentos</p>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="auth-tab {% if not modo_registro %}active{% endif %}" onclick="switchTab('login')">Ingresar</button>
+      <button class="auth-tab {% if modo_registro %}active{% endif %}" onclick="switchTab('registro')">Crear cuenta</button>
+    </div>
+
+    <!-- ── PANEL LOGIN ── -->
+    <div class="auth-panel {% if not modo_registro %}active{% endif %}" id="panel-login">
+
+      {% if error_login %}
+        <div class="auth-msg auth-error" style="display:block;">⚠️ {{ error_login }}</div>
+      {% endif %}
+
+      {% if exito_registro %}
+        <div class="auth-msg auth-success" style="display:block;">✅ {{ exito_registro }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login/">
+        {% csrf_token %}
+        <input type="hidden" name="modo" value="login"/>
+
+        <div class="form-group">
+          <label for="login-usuario">Usuario</label>
+          <input type="text" id="login-usuario" name="username" placeholder="tu_usuario" autocomplete="username" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password" required/>
+        </div>
+
+        <button type="submit" class="btn-auth">Ingresar →</button>
+      </form>
+
+      <div style="text-align:center; margin-top:0.8rem;">
+        <a href="/password_reset/" style="font-size:0.82rem; color:var(--gris); font-weight:600; text-decoration:none;">
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+      
+
+      <div class="auth-link-row">
+        ¿No tenés cuenta? <button onclick="switchTab('registro')">Registrate gratis</button>
+      </div>
+    </div>
+
+    <!-- ── PANEL REGISTRO ── -->
+    <div class="auth-panel {% if modo_registro %}active{% endif %}" id="panel-registro">
+
+      {% if error_registro %}
+        <div class="auth-msg auth-error" style="display:block;">
+          ⚠️
+          {% if error_registro is iterable and error_registro is not string %}
+            {% for e in error_registro %}{{ e }} {% endfor %}
+          {% else %}
+            {{ error_registro }}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <form method="POST" action="/registro/">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-nombre">Nombre</label>
+            <input type="text" id="reg-nombre" name="first_name" placeholder="Juan" required/>
+          </div>
+          <div class="form-group">
+            <label for="reg-apellido">Apellido</label>
+            <input type="text" id="reg-apellido" name="last_name" placeholder="García" required/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" name="email" placeholder="juan@empresa.com" autocomplete="email" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-telefono">Teléfono</label>
+          <input type="tel" id="reg-telefono" name="telefono" placeholder="+54 9 11 1234-5678" required/>
+        </div>
+
+        <div class="divider">Credenciales de acceso</div>
+
+        <div class="form-group">
+          <label for="reg-usuario">Nombre de usuario</label>
+          <input type="text" id="reg-usuario" name="username" placeholder="juan_garcia" autocomplete="username" required/>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Contraseña</label>
+          <input type="password" id="reg-password" name="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required/>
+          <div class="password-hint">Mínimo 8 caracteres</div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password2">Repetir contraseña</label>
+          <input type="password" id="reg-password2" name="password2" placeholder="••••••••" autocomplete="new-password" required/>
+        </div>
+
+        <button type="submit" class="btn-auth">Crear cuenta →</button>
+      </form>
+
+      <div class="auth-link-row">
+        ¿Ya tenés cuenta? <button onclick="switchTab('login')">Ingresá acá</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + tab)?.classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+    }
+    // Asignar IDs a los tabs
+    document.querySelectorAll('.auth-tab')[0].id = 'tab-login';
+    document.querySelectorAll('.auth-tab')[1].id = 'tab-registro';
+  </script>
+  <script>
+  localStorage.removeItem('carrito');
+  </script>
+</body>
+</html>

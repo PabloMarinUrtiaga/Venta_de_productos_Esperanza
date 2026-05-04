@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carrito — ESPERANZA</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+  body { min-height: 100vh; position: relative; padding-bottom: 80px; }
+  footer { position: absolute; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <ul class="navbar-links">
+      <li><a href="/">Inicio</a></li>
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% else %}
+        <li><a href="/login/">Ingresar</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="seccion-header" style="margin-top:2rem;">
+    <h2>Tu Carrito</h2>
+    <button class="btn btn-outline" id="btn-vaciar" onclick="vaciarCarrito()" style="font-size:0.88rem; padding:0.5rem 1.2rem;">
+      🗑️ Vaciar carrito
+    </button>
+  </div>
+
+  <!-- CARRITO CONTAINER -->
+  <div class="carrito-container" id="carrito-container">
+
+    <!-- ITEMS -->
+    <div class="carrito-items" id="carrito-items">
+      <!-- Generado por carrito.js -->
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="carrito-resumen" id="carrito-resumen">
+      <h3>📦 Resumen</h3>
+      <div id="resumen-lineas"></div>
+      <div class="resumen-total">
+        <span>Total</span>
+        <span id="resumen-total">$0,00</span>
+      </div>
+      {% if request.user.is_authenticated %}
+  <button onclick="finalizarCompra()" class="btn btn-rojo" style="width:100%; text-align:center; display:block;">
+    💳 Finalizar compra
+  </button>
+{% else %}
+  <a href="/login/" class="btn btn-rojo" style="width:100%; text-align:center; display:block;">
+    💳 Finalizar compra
+  </a>
+{% endif %}
+      <a href="/productos/" class="btn btn-outline" style="width:100%; text-align:center; display:block; margin-top:0.7rem; color:#fff; border-color:rgba(255,255,255,0.3);">
+        ⬅️ Seguir comprando
+      </a>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- FOOTER -->
+  <footer style="margin-top: auto;">
+  <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+</footer>
+
+  <script src="{% static 'productos/js/carrito.js' %}"></script>
+
+</body>
+</html>

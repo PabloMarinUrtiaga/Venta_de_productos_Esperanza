@@ -1,0 +1,179 @@
+// =============================================
+//  CARRITO.JS — Gestión del carrito
+//  Lee/escribe localStorage y llama al backend
+// =============================================
+
+function getCarrito() {
+  return JSON.parse(localStorage.getItem('carrito') || '{}');
+}
+
+function setCarrito(c) {
+  localStorage.setItem('carrito', JSON.stringify(c));
+}
+
+function actualizarContadorNav() {
+  const carrito = getCarrito();
+  const total   = Object.values(carrito).reduce((a, b) => a + b, 0);
+  const el      = document.getElementById('nav-contador');
+  if (el) el.textContent = `(${total})`;
+}
+
+function mostrarToast(msg, color = 'var(--verde)') {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.borderLeftColor = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Datos de productos (caché) ────────────────
+let catalogoCache = {};
+
+async function obtenerCatalogo() {
+  try {
+    const res  = await fetch('/productos/', { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+    data.forEach(p => { catalogoCache[p.id] = p; });
+  } catch {
+    // Fallback con precios de demostración
+    catalogoCache = {
+      1:  { id:1,  nombre: 'Leche Entera 1L',        precio: '350.00'  },
+      2:  { id:2,  nombre: 'Queso Cremoso 500g',      precio: '980.00'  },
+      3:  { id:3,  nombre: 'Atún al Natural x3',      precio: '1250.00' },
+      4:  { id:4,  nombre: 'Arvejas en Lata 400g',    precio: '420.00'  },
+      5:  { id:5,  nombre: 'Arroz Largo Fino 1kg',    precio: '580.00'  },
+      6:  { id:6,  nombre: 'Avena Instantánea 500g',  precio: '490.00'  },
+      7:  { id:7,  nombre: 'Galletitas Dulces x3',    precio: '760.00'  },
+      8:  { id:8,  nombre: 'Papas Fritas 200g',       precio: '680.00'  },
+      9:  { id:9,  nombre: 'Aceite de Girasol 900ml', precio: '1100.00' },
+      10: { id:10, nombre: 'Mayonesa 500g',            precio: '870.00'  },
+    };
+  }
+}
+
+// ── Eliminar producto ────────────────────────
+function eliminarDelCarrito(id) {
+  const carrito = getCarrito();
+  const nombre  = catalogoCache[id]?.nombre || 'Producto';
+  delete carrito[String(id)];
+  setCarrito(carrito);
+  mostrarToast(`🗑️ ${nombre} eliminado`, 'var(--rojo)');
+  renderCarrito();
+}
+
+// ── Cambiar cantidad ────────────────────────
+function cambiarCantidad(id, delta) {
+  const carrito = getCarrito();
+  const key     = String(id);
+  carrito[key]  = (carrito[key] || 1) + delta;
+  if (carrito[key] <= 0) {
+    delete carrito[key];
+  }
+  setCarrito(carrito);
+  renderCarrito();
+}
+
+// ── Vaciar ───────────────────────────────────
+function vaciarCarrito() {
+  if (!confirm('¿Vaciar todo el carrito?')) return;
+  setCarrito({});
+  mostrarToast('🗑️ Carrito vaciado', 'var(--naranja)');
+  renderCarrito();
+}
+
+// ── Render ───────────────────────────────────
+function renderCarrito() {
+  const carrito    = getCarrito();
+  const itemsEl    = document.getElementById('carrito-items');
+  const lineasEl   = document.getElementById('resumen-lineas');
+  const totalEl    = document.getElementById('resumen-total');
+  const containerEl= document.getElementById('carrito-container');
+  actualizarContadorNav();
+
+  const ids = Object.keys(carrito);
+
+  if (ids.length === 0) {
+    // Carrito vacío
+    containerEl.style.gridTemplateColumns = '1fr';
+    itemsEl.innerHTML = `
+      <div class="carrito-vacio">
+        <div class="icono-vacio">🛒</div>
+        <h3>El carrito está vacío</h3>
+        <p style="margin-bottom:1.5rem;">Agregá productos desde el catálogo.</p>
+        <a href="/productos/" class="btn btn-rojo">Ver catálogo</a>
+      </div>`;
+    document.getElementById('carrito-resumen').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('carrito-resumen').style.display = 'block';
+  containerEl.style.gridTemplateColumns = '';
+
+  let total = 0;
+  let lineasHTML = '';
+  let itemsHTML  = '';
+
+  ids.forEach(id => {
+    const cantidad = carrito[id];
+    const prod     = catalogoCache[id];
+    if (!prod) return;
+
+    const precio   = parseFloat(prod.precio);
+    const subtotal = precio * cantidad;
+    total += subtotal;
+
+    const emoji = { 'Lácteos':'🥛','Enlatados':'🥫','Cereales':'🌾','Snacks':'🍪','Condimentos':'🫙' }[prod.categoria] || '🛒';
+
+    itemsHTML += `
+      <div class="carrito-item" id="item-${id}">
+        <div class="carrito-item-icono">${emoji}</div>
+        <div class="carrito-item-info">
+          <div class="carrito-item-nombre">${prod.nombre}</div>
+          <div class="carrito-item-cantidad" style="display:flex; align-items:center; gap:0.5rem; margin-top:0.4rem;">
+            <button onclick="cambiarCantidad(${id}, -1)" style="border:1.5px solid #ddd; background:#fff; border-radius:6px; width:26px; height:26px; cursor:pointer; font-weight:800;">−</button>
+            <span style="font-weight:800; font-size:1rem;">${cantidad}</span>
+            <button onclick="cambiarCantidad(${id}, +1)" style="border:1.5px solid #ddd; background:#fff; border-radius:6px; width:26px; height:26px; cursor:pointer; font-weight:800;">+</button>
+            <span style="color:var(--gris); font-size:0.82rem;">× $${precio.toFixed(2)}</span>
+          </div>
+        </div>
+        <div class="carrito-item-precio">$${subtotal.toFixed(2)}</div>
+        <button class="btn-eliminar" onclick="eliminarDelCarrito(${id})" title="Eliminar">✕</button>
+      </div>`;
+
+    lineasHTML += `
+      <div class="resumen-linea">
+        <span>${prod.nombre}</span>
+        <span>$${subtotal.toFixed(2)}</span>
+      </div>`;
+  });
+
+  itemsEl.innerHTML  = itemsHTML  || '<p style="color:var(--gris); padding:1rem;">Sin datos de productos. Conectá el backend.</p>';
+  lineasEl.innerHTML = lineasHTML;
+  totalEl.textContent = `$${total.toFixed(2)}`;
+}
+
+// ── Init ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await obtenerCatalogo();
+  renderCarrito();
+});
+
+async function finalizarCompra() {
+  const carrito = getCarrito();
+  const csrfToken = document.cookie.split(';')
+    .find(c => c.trim().startsWith('csrftoken='))
+    ?.split('=')[1] || '';
+
+  await fetch('/sincronizar-carrito/', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify({ carrito }),
+  });
+
+  window.location.href = '/checkout/';
+}

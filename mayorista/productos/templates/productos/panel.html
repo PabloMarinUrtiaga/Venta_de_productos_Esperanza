@@ -1,0 +1,109 @@
+<h2>Agregar producto</h2>
+
+<form method="POST" action="{% url 'agregar_producto' %}">
+  {% csrf_token %}
+
+  <input type="text" name="nombre" placeholder="Nombre" required>
+  <input type="number" name="precio" placeholder="Precio" required>
+  <input type="number" name="stock" placeholder="Stock" required>
+
+  <button type="submit">Agregar</button>
+</form>
+
+<hr>
+
+<h2>Productos</h2>
+
+<!-- 🔎 Buscador -->
+<form method="GET" style="margin-bottom:10px;">
+  <input type="text" name="q" placeholder="Buscar producto...">
+  <button type="submit">Buscar</button>
+</form>
+
+<!-- 🎯 Filtros -->
+<a href="/panel/">Todos</a> |
+<a href="/panel/?filtro=bajo_stock">Stock bajo</a> |
+<a href="/panel/?filtro=stock_critico">Stock crítico</a> |
+<a href="/panel/?filtro=sin_stock">Sin stock</a>
+
+{% for producto in productos %}
+  <div style="padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:6px;">
+
+    <strong>{{ producto.nombre }}</strong><br>
+    Precio: ${{ producto.precio }}<br>
+
+    <form method="POST" action="{% url 'editar_precio' producto.id %}" style="margin-top:5px;">
+    {% csrf_token %}
+    <input type="number" name="precio" placeholder="Nuevo precio" required>
+    <button type="submit">Actualizar</button>
+    </form>
+
+    Stock: {{ producto.stock }}
+
+    {% if producto.stock <= 0 %}
+      <span style="color:red; font-weight:bold;">🚨🚨SIN STOCK🚨</span>
+    {% elif producto.stock <= 5 %}
+      <span style="color:red; font-weight:bold;">🚨 Crítico</span>
+    {% elif producto.stock <= 20 %}
+      <span style="color:orange;">⚠️ Bajo</span>
+    {% endif %}
+
+    <br><br>
+
+    <!-- Botones stock -->
+    <a href="{% url 'cambiar_stock' producto.id 'sumar' %}">➕</a>
+
+    {% if producto.stock > 0 %}
+      <a href="{% url 'cambiar_stock' producto.id 'restar' %}">➖</a>
+    {% endif %}
+
+    <!-- Eliminar -->
+    <a href="{% url 'eliminar_producto' producto.id %}" 
+   style="color:red; margin-left:10px;"
+   onclick="return confirm('¿Seguro que querés eliminar este producto?')">
+   🗑 Eliminar
+    </a>
+
+  </div>
+{% endfor %}
+
+<hr>
+<h2>Clientes</h2>
+
+<form method="GET" style="margin-bottom:10px;">
+  <input type="text" name="cliente" placeholder="Buscar cliente...">
+  <button type="submit">Buscar</button>
+</form>
+
+{% for c in clientes %}
+  <div style="padding:10px; border-bottom:1px solid #ddd;">
+    <strong>{{ c.usuario.username }}</strong><br>
+    Pedidos: {{ c.pedidos }}<br>
+    Total gastado: ${{ c.total }}
+  </div>
+{% endfor %}
+
+<hr>
+<h2>Pedidos</h2>
+
+<form method="GET" style="margin-bottom:10px;">
+  Desde: <input type="date" name="desde">
+  Hasta: <input type="date" name="hasta">
+  <button type="submit">Filtrar</button>
+</form>
+
+{% for pedido in pedidos %}
+  <div style="padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:6px;">
+
+    <strong>Pedido #{{ pedido.id }}</strong><br>
+    Cliente: {{ pedido.user.username }}<br>
+    Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}<br>
+    Total: ${{ pedido.total }}<br>
+
+    <a href="{% url 'detalle_pedido' pedido.id %}">
+  🔍 Ver detalle
+    </a>
+
+
+  </div>
+{% endfor %}

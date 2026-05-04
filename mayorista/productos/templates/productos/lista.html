@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Distribuidora Mayorista</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="index.html">ESPERANZA</a>
+    <ul class="navbar-links">
+      <li><a href="/">Inicio</a></li>
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% else %}
+        <li><a href="/login/">Ingresar</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-titulo">
+      Distribuidora
+      <span>MAYORISTA</span>
+    </h1>
+    <p class="hero-subtitulo">Precios directos de depósito</p>
+    <a href="#productos" class="btn btn-primary">Ver catálogo ↓</a>
+  </section>
+
+  <!-- CATEGORÍAS -->
+  <div class="secciones">
+    <a href="#" class="categoria-card" data-cat="Lácteos">
+      <span class="icono">🥛</span> Lácteos
+    </a>
+    <a href="#" class="categoria-card" data-cat="Enlatados">
+      <span class="icono">🥫</span> Enlatados
+    </a>
+    <a href="#" class="categoria-card" data-cat="Cereales">
+      <span class="icono">🌾</span> Cereales
+    </a>
+    <a href="#" class="categoria-card" data-cat="Snacks">
+      <span class="icono">🍪</span> Snacks
+    </a>
+    <a href="#" class="categoria-card" data-cat="Condimentos">
+      <span class="icono">🫙</span> Condimentos
+    </a>
+  </div>
+
+  <!-- BUSCADOR -->
+  <div class="buscador-wrap">
+    <input type="text" class="buscador" id="buscador" placeholder="🔍  Buscar producto..." />
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros" id="filtros">
+    <button class="filtro-btn activo" data-cat="todos">Todos</button>
+    <button class="filtro-btn" data-cat="Lácteos">Lácteos</button>
+    <button class="filtro-btn" data-cat="Enlatados">Enlatados</button>
+    <button class="filtro-btn" data-cat="Cereales">Cereales</button>
+    <button class="filtro-btn" data-cat="Snacks">Snacks</button>
+    <button class="filtro-btn" data-cat="Condimentos">Condimentos</button>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div class="seccion-header" id="productos">
+    <h2>Catálogo</h2>
+    <small id="resultado-count" style="color:var(--gris); font-weight:700;"></small>
+  </div>
+
+  <div class="productos-grid" id="productos-grid">
+    <!-- Generado por productos.js -->
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+ {% if recien_logueado or recien_logout %}
+<script>
+  localStorage.removeItem('carrito');
+</script>
+{% endif %}
+  <script src="{% static 'productos/js/productos.js' %}"></script>
+
+  
+</body>
+</html>
