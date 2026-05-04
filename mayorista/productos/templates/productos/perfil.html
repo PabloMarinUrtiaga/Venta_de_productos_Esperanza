@@ -180,6 +180,19 @@ body { min-height: 100%; display: flex; flex-direction: column; }
       font-size: 0.88rem;
       font-weight: 600;
     }
+
+    .btn-admin {
+  background: var(--amarillo);
+  color: var(--oscuro);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-admin:hover { background: var(--naranja); color: #fff; }
   </style>
 </head>
 <body>
@@ -188,21 +201,17 @@ body { min-height: 100%; display: flex; flex-direction: column; }
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
     
-  <!-- Panel Interno -->>
-  {% if request.user.is_staff %}
-  <a href="/panel/" class="btn-admin">
-    ⚙️ Panel interno
-  </a>
-{% endif %}
+
 
     <ul class="navbar-links">
-      <li><a href="/productos/">Inicio</a></li>
-      <li><a href="/productos/">Productos</a></li>
-      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
-      <li>
-        <a href="/perfil/" style="color:var(--amarillo); font-size:1.3rem;" title="Mi perfil">👤</a>
-      </li>
-    </ul>
+  {% if request.user.is_staff %}
+    <li><a href="/panel/" class="btn-admin">⚙️ Panel interno</a></li>
+  {% endif %}
+  <li><a href="/productos/">Inicio</a></li>
+  <li><a href="/productos/">Productos</a></li>
+  <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+  <li><a href="/perfil/" style="color:var(--amarillo); font-size:1.3rem;" title="Mi perfil">👤</a></li>
+</ul>
   </nav>
 
   <div class="perfil-wrap">
