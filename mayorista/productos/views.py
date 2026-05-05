@@ -282,10 +282,17 @@ def perfil(request):
 
 # ── Historial de pedidos ──────────────────────
 @login_required
-def historial(request):
-    pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')
-    return render(request, 'productos/historial.html', {'pedidos': pedidos})
-
+def historial(request, user_id=None):
+    if user_id and request.user.is_staff:
+        usuario = get_object_or_404(User, id=user_id)
+        pedidos = Pedido.objects.filter(user=usuario).order_by('-fecha')
+    else:
+        usuario = request.user
+        pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')
+    return render(request, 'productos/historial.html', {
+        'pedidos': pedidos,
+        'usuario': usuario,
+    })
 
 # ── Logout ────────────────────────────────────
 def logout_view(request):
@@ -295,14 +302,15 @@ def logout_view(request):
 
 @login_required
 def detalle_pedido(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id, user=request.user)
+    if request.user.is_staff:
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+    else:
+        pedido = get_object_or_404(Pedido, id=pedido_id, user=request.user)
     items = PedidoItem.objects.filter(pedido=pedido)
-
     return render(request, 'productos/detalle_pedido.html', {
         'pedido': pedido,
-        'items': items
+        'items': items,
     })
-    
 # Panel
 from django.db.models import Q, Sum
 

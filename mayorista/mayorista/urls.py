@@ -9,6 +9,7 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('historial/<int:user_id>/', historial),
     path('sincronizar-carrito/', sincronizar_carrito),
     path('admin/', admin.site.urls),
     path('', home),

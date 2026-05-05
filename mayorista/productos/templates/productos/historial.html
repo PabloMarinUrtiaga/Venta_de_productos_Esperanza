@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Historial de pedidos — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    body { min-height: 100vh; position: relative; padding-bottom: 80px; }
+    footer { position: absolute; bottom: 0; width: 100%; }
+
+    .historial-wrap {
+      max-width: 860px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+
+    .historial-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .historial-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: var(--oscuro);
+      border-left: 6px solid var(--rojo);
+      padding-left: 0.8rem;
+    }
+
+    .historial-subtitulo {
+      font-size: 0.85rem;
+      color: var(--gris);
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
+
+    .historial-section {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+
+    .pedido-historial-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 1rem;
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .pedido-historial-row:last-child { border-bottom: none; }
+    .pedido-historial-row:hover { background: #fafaf7; }
+
+    .pedido-hist-id {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      color: var(--oscuro);
+      letter-spacing: 0.5px;
+      min-width: 90px;
+    }
+
+    .pedido-hist-info {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gris);
+      line-height: 1.6;
+    }
+    .pedido-hist-info strong { color: var(--oscuro); }
+
+    .pedido-hist-total {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--rojo);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .btn-ver {
+      background: var(--oscuro);
+      color: var(--amarillo);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.45rem 0.9rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn-ver:hover { background: var(--rojo); }
+
+    .historial-empty {
+      padding: 3rem;
+      text-align: center;
+      color: var(--gris);
+    }
+    .historial-empty .icono { font-size: 3rem; margin-bottom: 1rem; }
+    .historial-empty p { font-weight: 700; font-size: 0.95rem; }
+
+    .btn-volver {
+      display: inline-block;
+      background: var(--oscuro);
+      color: var(--amarillo);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.7rem 1.4rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-volver:hover { background: #333; }
+
+    @media (max-width: 600px) {
+      .pedido-historial-row { grid-template-columns: 1fr 1fr; }
+      .pedido-hist-id { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
+    <ul class="navbar-links">
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+      {% if request.user.is_authenticated %}
+        <li><a href="/perfil/" style="color:var(--amarillo); font-size:1.3rem;" title="Mi perfil">👤</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <div class="historial-wrap">
+
+    <div class="historial-header">
+      <div>
+        <div class="historial-titulo">Historial de pedidos</div>
+        {% if usuario %}
+          <div class="historial-subtitulo">Cliente: <strong>{{ usuario.username }}</strong></div>
+        {% endif %}
+      </div>
+      {% if request.user.is_staff %}
+        <a href="/panel/" class="btn-volver">⬅ Volver al panel</a>
+      {% else %}
+        <a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
+      {% endif %}
+    </div>
+
+    <div class="historial-section">
+      {% if pedidos %}
+        {% for pedido in pedidos %}
+          <div class="pedido-historial-row">
+            <div class="pedido-hist-id">Pedido #{{ pedido.id }}</div>
+            <div class="pedido-hist-info">
+              <strong>{{ pedido.fecha|date:"d/m/Y — H:i" }}</strong><br>
+              {% if pedido.entrega == 'domicilio' %}🏠 Envío a domicilio{% else %}🏪 Retiro en el local{% endif %}
+              · 
+              {% if pedido.pago == 'transferencia' %}🏦 Transferencia{% elif pedido.pago == 'efectivo' %}💵 Efectivo{% else %}💙 MercadoPago{% endif %}
+            </div>
+            <div class="pedido-hist-total">${{ pedido.total }}</div>
+            <a href="/pedido/{{ pedido.id }}/" class="btn-ver">🔍 Ver detalle</a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="historial-empty">
+          <div class="icono">📦</div>
+          <p>No hay pedidos registrados.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+</body>
+</html>

@@ -807,4 +807,22 @@ footer strong { color: var(--amarillo); }
   display: block;
 }
 
+/* Boton panel visible */
+
+.btn-panel {
+  background-color: #1e3a8a; /* azul oscuro */
+  color: rgb(255, 255, 255);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-panel:hover {
+  background-color: #3b82f6; /* azul más claro */
+}
+
 
