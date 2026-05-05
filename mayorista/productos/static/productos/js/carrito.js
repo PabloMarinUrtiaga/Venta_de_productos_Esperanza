@@ -66,10 +66,26 @@ function eliminarDelCarrito(id) {
 function cambiarCantidad(id, delta) {
   const carrito = getCarrito();
   const key     = String(id);
-  carrito[key]  = (carrito[key] || 1) + delta;
-  if (carrito[key] <= 0) {
+  const stock   = catalogoCache[id]?.stock || 0;
+
+  let nuevaCantidad = (carrito[key] || 1) + delta;
+
+  // 🚫 NO BAJAR DE 1
+  if (nuevaCantidad <= 0) {
     delete carrito[key];
+    setCarrito(carrito);
+    renderCarrito();
+    return;
   }
+
+  // 🚫 NO SUPERAR STOCK
+  if (nuevaCantidad > stock) {
+    mostrarToast("🚫 Stock máximo alcanzado", "var(--rojo)");
+    return;
+  }
+
+  carrito[key] = nuevaCantidad;
+
   setCarrito(carrito);
   renderCarrito();
 }

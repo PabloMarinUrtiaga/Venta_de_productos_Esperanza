@@ -36,7 +36,20 @@ function actualizarContadorNav() {
 
 function agregarAlCarrito(id, nombre) {
   const carrito = getCarrito();
-  carrito[id]   = (carrito[id] || 0) + 1;
+
+  const producto = todosLosProductos.find(p => p.id === id);
+  const stock = producto?.stock ?? Infinity;
+
+  const cantidadActual = carrito[id] || 0;
+
+  // 🚫 NO PERMITIR SUPERAR STOCK
+  if (cantidadActual >= stock) {
+    mostrarToast("🚫 No hay más stock disponible", "var(--rojo)");
+    return;
+  }
+
+  carrito[id] = cantidadActual + 1;
+
   setCarrito(carrito);
   mostrarToast(`✅ ${nombre} agregado al carrito`);
 }
