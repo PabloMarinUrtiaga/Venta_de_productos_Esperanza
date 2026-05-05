@@ -50,14 +50,6 @@ function mostrarToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ── Badge de stock ───────────────────────────
-function badgeStock(stock) {
-  if (stock <= 5)   return '<span class="badge-stock badge-urgente">🚨 Urgente</span>';
-  if (stock <= 20)  return '<span class="badge-stock badge-critico">🔴 Crítico</span>';
-  if (stock <= 100) return '<span class="badge-stock badge-bajo">⚠️ Stock bajo</span>';
-  return '<span class="badge-stock badge-ok">✅ Disponible</span>';
-}
-
 // ── Render ───────────────────────────────────
 function renderProductos(lista) {
   const grid  = document.getElementById('productos-grid');
@@ -81,13 +73,11 @@ function renderProductos(lista) {
       <div class="producto-card">
         <div class="producto-card-img">
           ${emoji}
-          ${badgeStock(p.stock)}
         </div>
         <div class="producto-card-body">
           <div class="producto-nombre">${p.nombre}</div>
           <div class="producto-categoria">${p.categoria || 'General'}</div>
           <div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>
-          <div class="producto-stock">Stock: ${p.stock} unidades</div>
           <button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}')">
             🛒 Agregar al carrito
           </button>
