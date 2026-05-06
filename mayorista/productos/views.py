@@ -327,7 +327,7 @@ def perfil(request):
         perfil_obj = Perfil.objects.get(user=request.user)
     except Perfil.DoesNotExist:
         perfil_obj = None
-    pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')
+    pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')[:3]
     return render(request, 'productos/perfil.html', {
         'perfil': perfil_obj,
         'pedidos': pedidos,
