@@ -1,18 +1,19 @@
 from django.db import models
-#Productos
+from django.contrib.auth.models import User
+
+
+# ── Producto ──────────────────────────────────
 class Producto(models.Model):
-    nombre = models.CharField(max_length=100)
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField()
-    categoria = models.CharField(max_length=50, blank=True)
+    nombre      = models.CharField(max_length=100)
+    precio      = models.DecimalField(max_digits=10, decimal_places=2)
+    stock       = models.IntegerField()
+    categoria   = models.CharField(max_length=50, blank=True)
     descripcion = models.TextField(blank=True)
-    activo = models.BooleanField(default=True)
+    activo      = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nombre
 
-#Checkout  
-from django.contrib.auth.models import User
 
 # ── Pedido ────────────────────────────────────
 class Pedido(models.Model):
@@ -25,10 +26,17 @@ class Pedido(models.Model):
         ('efectivo',      'Efectivo'),
         ('mercadopago',   'MercadoPago'),
     ]
+    ESTADO_CHOICES = [
+        ('pendiente',      'Pendiente'),
+        ('en_preparacion', 'En preparación'),
+        ('enviado',        'Enviado'),
+        ('entregado',      'Entregado'),
+    ]
 
     user          = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     fecha         = models.DateTimeField(auto_now_add=True)
     total         = models.DecimalField(max_digits=10, decimal_places=2)
+    estado        = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
 
     # Datos del cliente
     nombre        = models.CharField(max_length=100, blank=True)
@@ -51,29 +59,29 @@ class Pedido(models.Model):
     notas         = models.TextField(blank=True)
 
     def __str__(self):
-        return f"Pedido #{self.id} — {self.nombre} {self.apellido}"
+        return f"Pedido #{self.id} — {self.nombre} {self.apellido} [{self.estado}]"
 
 
-
+# ── PedidoItem ────────────────────────────────
 class PedidoItem(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    pedido   = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
-    
+    precio   = models.DecimalField(max_digits=10, decimal_places=2)
+
     @property
     def subtotal(self):
         return self.precio * self.cantidad
 
+    def __str__(self):
+        return f"{self.cantidad}x {self.producto.nombre}"
 
-from django.contrib.auth.models import User
 
+# ── Perfil ────────────────────────────────────
 class Perfil(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user           = models.OneToOneField(User, on_delete=models.CASCADE)
     numero_cliente = models.IntegerField()
-    telefono = models.CharField(max_length=20, blank=True)
+    telefono       = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
-    
-

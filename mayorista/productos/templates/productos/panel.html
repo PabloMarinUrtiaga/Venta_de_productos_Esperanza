@@ -26,7 +26,6 @@
       margin-bottom: 1.5rem;
     }
 
-    /* SECCIONES */
     .panel-section {
       background: var(--blanco);
       border-radius: var(--radio);
@@ -52,7 +51,6 @@
 
     .panel-section-body { padding: 1.2rem 1.4rem; }
 
-    /* FORMULARIO AGREGAR */
     .form-inline {
       display: flex;
       gap: 0.8rem;
@@ -74,19 +72,13 @@
       flex: 1;
       min-width: 140px;
     }
+    .form-inline input:focus { border-color: var(--rojo); background: var(--blanco); }
 
-    .form-inline input:focus {
-      border-color: var(--rojo);
-      background: var(--blanco);
-    }
-
-    /* BUSCADOR */
     .buscador-panel {
       display: flex;
       gap: 0.6rem;
       margin-bottom: 1rem;
     }
-
     .buscador-panel input {
       flex: 1;
       padding: 0.65rem 1rem;
@@ -99,10 +91,8 @@
       background: var(--fondo);
       transition: border-color 0.2s;
     }
-
     .buscador-panel input:focus { border-color: var(--rojo); background: var(--blanco); }
 
-    /* FILTROS */
     .filtros-panel {
       display: flex;
       gap: 0.5rem;
@@ -122,13 +112,8 @@
       text-decoration: none;
       transition: all 0.2s;
     }
-    .filtro-tag:hover, .filtro-tag.activo {
-      background: var(--rojo);
-      border-color: var(--rojo);
-      color: #fff;
-    }
+    .filtro-tag:hover, .filtro-tag.activo { background: var(--rojo); border-color: var(--rojo); color: #fff; }
 
-    /* CARD PRODUCTO */
     .producto-panel-card {
       background: var(--fondo);
       border: 1.5px solid #e8e5df;
@@ -140,47 +125,19 @@
       gap: 1rem;
       align-items: center;
     }
-
     .producto-panel-card:last-child { margin-bottom: 0; }
 
-    .prod-panel-nombre {
-      font-weight: 800;
-      font-size: 1rem;
-      color: var(--oscuro);
-      margin-bottom: 0.3rem;
-    }
+    .prod-panel-nombre { font-weight: 800; font-size: 1rem; color: var(--oscuro); margin-bottom: 0.3rem; }
+    .prod-panel-precio { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--rojo); letter-spacing: 0.5px; }
+    .prod-panel-stock  { font-size: 0.82rem; font-weight: 700; color: var(--gris); margin-top: 0.2rem; }
 
-    .prod-panel-precio {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem;
-      color: var(--rojo);
-      letter-spacing: 0.5px;
-    }
+    .badge-sinstock { color: #A32D2D; font-weight: 800; }
+    .badge-critico  { color: var(--rojo); font-weight: 800; }
+    .badge-bajo     { color: var(--naranja); font-weight: 800; }
 
-    .prod-panel-stock {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--gris);
-      margin-top: 0.2rem;
-    }
+    .prod-panel-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
 
-    .badge-sinstock  { color: #A32D2D; font-weight: 800; }
-    .badge-critico   { color: var(--rojo); font-weight: 800; }
-    .badge-bajo      { color: var(--naranja); font-weight: 800; }
-
-    .prod-panel-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      align-items: flex-end;
-    }
-
-    .form-precio {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
+    .form-precio { display: flex; gap: 0.4rem; align-items: center; }
     .form-precio input {
       width: 120px;
       padding: 0.45rem 0.7rem;
@@ -195,13 +152,8 @@
     }
     .form-precio input:focus { border-color: var(--rojo); }
 
-    .stock-actions {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
+    .stock-actions { display: flex; gap: 0.4rem; align-items: center; }
 
-    /* BOTONES */
     .btn-sm {
       padding: 0.4rem 0.9rem;
       border-radius: var(--radio-sm);
@@ -225,7 +177,6 @@
     .btn-stock-sm   { background: var(--fondo); border: 2px solid #ddd; color: var(--oscuro); width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 1rem; border-radius: 6px; }
     .btn-stock-sm:hover { border-color: var(--rojo); color: var(--rojo); }
 
-    /* CLIENTES */
     .cliente-row {
       display: grid;
       grid-template-columns: 1fr auto auto;
@@ -243,13 +194,14 @@
     /* PEDIDOS */
     .pedido-panel-row {
       display: grid;
-      grid-template-columns: auto 1fr auto auto;
+      grid-template-columns: auto 1fr auto auto auto;
       gap: 1rem;
       padding: 0.9rem 0;
       border-bottom: 1px solid #f0f0ec;
       align-items: center;
     }
     .pedido-panel-row:last-child { border-bottom: none; }
+
     .pedido-panel-id {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.2rem;
@@ -257,15 +209,48 @@
       letter-spacing: 0.5px;
       min-width: 80px;
     }
+
     .pedido-panel-info { font-size: 0.82rem; font-weight: 600; color: var(--gris); }
     .pedido-panel-info strong { color: var(--oscuro); }
+
     .pedido-panel-total {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.3rem;
       color: var(--rojo);
+      white-space: nowrap;
     }
 
-    /* FILTRO FECHAS */
+    /* BADGE ESTADO */
+    .badge-estado {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .estado-pendiente      { background: #FEF9C3; color: #854D0E; border: 1px solid #F9C124; }
+    .estado-en_preparacion { background: #FFF3E0; color: #E65100; border: 1px solid #FF6B35; }
+    .estado-enviado        { background: #EFF6FF; color: #1565C0; border: 1px solid #93C5FD; }
+    .estado-entregado      { background: #F0FFF6; color: #1a7a45; border: 1px solid #2ECC71; }
+
+    /* SELECT ESTADO */
+    .select-estado {
+      padding: 0.35rem 0.6rem;
+      border: 2px solid #e0e0e0;
+      border-radius: var(--radio-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      outline: none;
+      background: var(--fondo);
+      color: var(--oscuro);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .select-estado:focus { border-color: var(--rojo); }
+
     .filtro-fechas {
       display: flex;
       gap: 0.8rem;
@@ -292,7 +277,7 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
     <ul class="navbar-links">
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
@@ -322,35 +307,30 @@
 
     <!-- ── PRODUCTOS ── -->
     <div class="panel-section">
-      <div class="panel-section-header">
-        <span>📦 Productos</span>
-      </div>
+      <div class="panel-section-header"><span>📦 Productos</span></div>
       <div class="panel-section-body">
 
-        <!-- Buscador -->
         <form method="GET" class="buscador-panel">
           <input type="text" name="q" placeholder="🔍 Buscar producto..." value="{{ request.GET.q }}"/>
           <button type="submit" class="btn-sm btn-primary-sm">Buscar</button>
         </form>
 
-        <!-- Filtros -->
         <div class="filtros-panel">
           <a href="/panel/" class="filtro-tag {% if not request.GET.filtro %}activo{% endif %}">Todos</a>
-          <a href="/panel/?filtro=bajo_stock"   class="filtro-tag {% if request.GET.filtro == 'bajo_stock' %}activo{% endif %}">⚠️ Stock bajo</a>
+          <a href="/panel/?filtro=bajo_stock"    class="filtro-tag {% if request.GET.filtro == 'bajo_stock' %}activo{% endif %}">⚠️ Stock bajo</a>
           <a href="/panel/?filtro=stock_critico" class="filtro-tag {% if request.GET.filtro == 'stock_critico' %}activo{% endif %}">🔴 Stock crítico</a>
-          <a href="/panel/?filtro=sin_stock"    class="filtro-tag {% if request.GET.filtro == 'sin_stock' %}activo{% endif %}">🚨 Sin stock</a>
+          <a href="/panel/?filtro=sin_stock"     class="filtro-tag {% if request.GET.filtro == 'sin_stock' %}activo{% endif %}">🚨 Sin stock</a>
         </div>
 
-        <!-- Lista de productos -->
         {% for producto in productos %}
           <div class="producto-panel-card">
             <div>
               <div class="prod-panel-nombre">{{ producto.nombre }}</div>
               <div class="prod-panel-precio">${{ producto.precio }}</div>
-              <div class="prod-panel-stock">
+              <div class="prod-panel-stock" id="stock-{{ producto.id }}">
                 Stock: {{ producto.stock }}
                 {% if producto.stock <= 0 %}
-                  <span class="badge-sinstock">🚨🚨 SIN STOCK</span>
+                  <span class="badge-sinstock">🚨 SIN STOCK</span>
                 {% elif producto.stock <= 5 %}
                   <span class="badge-critico">🚨 Crítico</span>
                 {% elif producto.stock <= 20 %}
@@ -358,20 +338,16 @@
                 {% endif %}
               </div>
             </div>
-
             <div class="prod-panel-actions">
-              <!-- Editar precio -->
               <form method="POST" action="{% url 'editar_precio' producto.id %}" class="form-precio">
                 {% csrf_token %}
                 <input type="number" name="precio" placeholder="Nuevo precio" step="0.01"/>
                 <button type="submit" class="btn-sm btn-success-sm">Actualizar</button>
               </form>
-
-              <!-- Stock y eliminar -->
               <div class="stock-actions">
-                <a href="{% url 'cambiar_stock' producto.id 'sumar' %}" class="btn-sm btn-stock-sm" title="Sumar stock">+</a>
+                <button onclick='cambiarStock({{ producto.id }}, "sumar")' class="btn-sm btn-stock-sm" title="Sumar stock">+</button>
                 {% if producto.stock > 0 %}
-                  <a href="{% url 'cambiar_stock' producto.id 'restar' %}" class="btn-sm btn-stock-sm" title="Restar stock">−</a>
+                  <button onclick='cambiarStock({{ producto.id }}, "restar")' class="btn-sm btn-stock-sm" title="Restar stock">−</button>
                 {% endif %}
                 <a href="{% url 'eliminar_producto' producto.id %}"
                    class="btn-sm btn-danger-sm"
@@ -392,18 +368,16 @@
     <div class="panel-section">
       <div class="panel-section-header">👥 Clientes</div>
       <div class="panel-section-body">
-
         <form method="GET" class="buscador-panel">
           <input type="text" name="cliente" placeholder="🔍 Buscar cliente..." value="{{ request.GET.cliente }}"/>
           <button type="submit" class="btn-sm btn-primary-sm">Buscar</button>
         </form>
-
         {% for c in clientes %}
           <div class="cliente-row">
             <div>
-              <a href="/historial/{{ c.usuario.id }}/" style="color:var(--oscuro); text-decoration:none; font-weight:800;">
-  {{ c.usuario.username }} → Ver historial
-</a>
+              <a href="/historial/{{ c.usuario.id }}/" style="text-decoration:none;">
+                <div class="cliente-nombre">{{ c.usuario.username }} → Ver historial</div>
+              </a>
               <div class="cliente-meta">{{ c.pedidos }} pedido{{ c.pedidos|pluralize }}</div>
             </div>
             <div class="cliente-total">${{ c.total }}</div>
@@ -411,7 +385,6 @@
         {% empty %}
           <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
         {% endfor %}
-
       </div>
     </div>
 
@@ -435,11 +408,23 @@
           <div class="pedido-panel-row">
             <div class="pedido-panel-id">Pedido #{{ pedido.id }}</div>
             <div class="pedido-panel-info">
-              <strong>{{ pedido.user.username }}</strong><br>
-              {{ pedido.fecha|date:"d/m/Y H:i" }}
+              <strong>{{ pedido.nombre }} {{ pedido.apellido }}</strong><br>
+              {{ pedido.fecha|date:"d/m/Y H:i" }} · {{ pedido.user.username }}
             </div>
             <div class="pedido-panel-total">${{ pedido.total }}</div>
-            <a href="{% url 'detalle_pedido' pedido.id %}" class="btn-sm btn-primary-sm">🔍 Ver detalle</a>
+
+            <!-- Selector de estado -->
+            <form method="POST" action="/cambiar-estado/{{ pedido.id }}/">
+              {% csrf_token %}
+              <select name="estado" class="select-estado" onchange="this.form.submit()">
+                <option value="pendiente"      {% if pedido.estado == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option>
+                <option value="en_preparacion" {% if pedido.estado == 'en_preparacion' %}selected{% endif %}>🔧 En preparación</option>
+                <option value="enviado"        {% if pedido.estado == 'enviado' %}selected{% endif %}>🚚 Enviado</option>
+                <option value="entregado"      {% if pedido.estado == 'entregado' %}selected{% endif %}>✅ Entregado</option>
+              </select>
+            </form>
+
+            <a href="/pedido/{{ pedido.id }}/" class="btn-sm btn-primary-sm">🔍 Ver detalle</a>
           </div>
         {% empty %}
           <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No hay pedidos en este período.</p>
@@ -453,6 +438,25 @@
   <footer>
     <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
   </footer>
+
+  <script>
+    async function cambiarStock(id, accion) {
+      const csrfToken = document.cookie.split(';')
+        .find(c => c.trim().startsWith('csrftoken='))?.split('=')[1] || '';
+
+      const res = await fetch(`/cambiar-stock-ajax/${id}/${accion}/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': csrfToken },
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        const el = document.getElementById(`stock-${id}`);
+        if (el) el.firstChild.textContent = `Stock: ${data.stock}`;
+      }
+    }
+  </script>
 
 </body>
 </html>

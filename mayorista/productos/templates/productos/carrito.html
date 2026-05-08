@@ -37,7 +37,7 @@
   </div>
 
   <!-- CARRITO CONTAINER -->
-  <div class="carrito-container" id="carrito-container">
+  <div class="carrito-container" id="carrito-container" style="display:none;">
 
     <!-- ITEMS -->
     <div class="carrito-items" id="carrito-items">
@@ -66,18 +66,20 @@
       </a>
       {% if pedidos %}
       <a href="{% url 'repetir_pedido' %}" 
-          style="
-            display:inline-block;
-            margin-bottom:1rem;
-            background:var(--verde);
-            color:white;
-            padding:0.7rem 1.2rem;
-            border-radius:6px;
-            font-weight:700;
-            text-decoration:none;
-          ">
-          🔁 Repetir último pedido
-        </a>
+  style="
+    display:block;
+    width:100%;
+    text-align:center;
+    margin-bottom:1rem;
+    background:var(--verde);
+    color:white;
+    padding:0.7rem 1.2rem;
+    border-radius:6px;
+    font-weight:700;
+    text-decoration:none;
+  ">
+  🔁 Repetir último pedido
+</a>
       {% else %}
         <div style="color:var(--gris); font-size:0.9rem; margin-bottom:1rem;">
             Todavía no tenés pedidos para repetir
@@ -94,7 +96,8 @@
   <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
 </footer>
 
-  <script src="{% static 'productos/js/carrito.js' %}"></script>
+  <script src="{% static 'productos/js/carrito.js' %}?v=4"></script>
+  
 
 </body>
 </html>

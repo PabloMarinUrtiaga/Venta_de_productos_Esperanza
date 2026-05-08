@@ -95,7 +95,8 @@
 
         <div class="form-group">
           <label for="reg-telefono">Teléfono</label>
-          <input type="tel" id="reg-telefono" name="telefono" placeholder="+54 9 11 1234-5678" required/>
+          <input type="tel" id="reg-telefono" name="telefono" placeholder="11 1234-5678" required
+          pattern="[0-9\s\-\+]{8,15}" title="Ingresá un número de teléfono válido (8 a 15 dígitos)"/>
         </div>
 
         <div class="divider">Credenciales de acceso</div>
