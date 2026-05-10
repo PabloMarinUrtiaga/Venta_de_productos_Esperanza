@@ -664,6 +664,33 @@ def stock_actual(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'stock': producto.stock})
 
+#Editar el stock por mas de a 1
+@login_required
+def editar_stock(request, producto_id):
+
+    if not request.user.is_staff:
+        return redirect('/')
+
+    producto = get_object_or_404(Producto, id=producto_id)
+
+    if request.method == 'POST':
+
+        nuevo_stock = request.POST.get('stock', '').strip()
+
+        if nuevo_stock != '':
+
+            try:
+                nuevo_stock = int(nuevo_stock)
+
+                if nuevo_stock >= 0:
+                    producto.stock = nuevo_stock
+                    producto.save()
+
+            except ValueError:
+                pass
+
+    return redirect('/panel/')
+
 #WEBHOOK
 
 @csrf_exempt

@@ -345,16 +345,48 @@
                 <button type="submit" class="btn-sm btn-success-sm">Actualizar</button>
               </form>
               <div class="stock-actions">
-                <button onclick='cambiarStock({{ producto.id }}, "sumar")' class="btn-sm btn-stock-sm" title="Sumar stock">+</button>
+
+                <!-- Botones rápidos -->
+                <button onclick='cambiarStock({{ producto.id }}, "sumar")'
+                        class="btn-sm btn-stock-sm"
+                        title="Sumar stock">
+                  +
+                </button>
+
                 {% if producto.stock > 0 %}
-                  <button onclick='cambiarStock({{ producto.id }}, "restar")' class="btn-sm btn-stock-sm" title="Restar stock">−</button>
+                  <button onclick='cambiarStock({{ producto.id }}, "restar")'
+                          class="btn-sm btn-stock-sm"
+                          title="Restar stock">
+                    −
+                  </button>
                 {% endif %}
-                <a href="{% url 'eliminar_producto' producto.id %}"
-                   class="btn-sm btn-danger-sm"
-                   onclick="return confirm('¿Seguro que querés eliminar {{ producto.nombre }}?')">
-                  🗑 Eliminar
-                </a>
+
               </div>
+
+              <!-- MODIFICAR STOCK MANUAL -->
+              <form method="POST"
+                    action="{% url 'editar_stock' producto.id %}"
+                    class="form-precio"
+                    style="margin-top:0.5rem;">
+                    
+                {% csrf_token %}
+
+                <input type="number"
+                      name="stock"
+                      placeholder="Nuevo stock"
+                      required>
+
+                <button type="submit" class="btn-sm btn-primary-sm">
+                  📦 Stock
+                </button>
+              </form>
+
+              <!-- ELIMINAR -->
+              <a href="{% url 'eliminar_producto' producto.id %}"
+                class="btn-sm btn-danger-sm"
+                onclick="return confirm('¿Seguro que querés eliminar {{ producto.nombre }}?')">
+                🗑 Eliminar
+              </a>
             </div>
           </div>
         {% empty %}
