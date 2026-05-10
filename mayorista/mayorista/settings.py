@@ -131,6 +131,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = 'aab697001@smtp-brevo.com'          # 👈 tu gmail real
-EMAIL_HOST_PASSWORD = 'xsmtpsib-fe069b479e5f78ad932b258b2c56af00f74c6f0d6f8b111a3c942d07e531914a-ZMgl9t67I13PvmYu'         # 👈 la que generaste
+EMAIL_HOST_PASSWORD = 'xsmtpsib-fe069b479e5f78ad932b258b2c56af00f74c6f0d6f8b111a3c942d07e531914a-Qmf7Mbw9iCVZE0eS'         # 👈 la que generaste
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = 'Esperanza <distribuidoraesperanza15@gmail.com>'
