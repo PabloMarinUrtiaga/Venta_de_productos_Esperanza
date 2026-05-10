@@ -6,12 +6,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import Producto, Pedido, PedidoItem, Perfil
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-import mercadopago
+import mercadopago, json
 from django.conf import settings
 from django.db import transaction
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
 
@@ -91,7 +91,6 @@ def vaciar_carrito(request):
 
 # ── Sincronizacion Carrito ────────────────────────────
 
-import json
 
 def sincronizar_carrito(request):
     if request.method == 'POST':
@@ -294,6 +293,8 @@ def checkout(request):
                     "pending":
                         "http://127.0.0.1:8000/carrito/",
                 },
+
+                
 
                 "external_reference": str(pedido.id),
             }
@@ -662,3 +663,59 @@ def cambiar_stock_ajax(request, producto_id, accion):
 def stock_actual(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'stock': producto.stock})
+
+#WEBHOOK
+
+@csrf_exempt
+def mp_webhook(request):
+
+    if request.method != "POST":
+        return HttpResponse(status=400)
+
+    data = json.loads(request.body)
+
+    print("WEBHOOK RECIBIDO:")
+    print(data)
+
+    # Solo pagos
+    if data.get("type") != "payment":
+        return HttpResponse(status=200)
+
+    payment_id = data.get("data", {}).get("id")
+
+    if not payment_id:
+        return HttpResponse(status=200)
+
+    # Buscar info del pago en Mercado Pago
+    payment_info = sdk.payment().get(payment_id)
+
+    payment = payment_info.get("response", {})
+
+    print(payment)
+
+    # Verificar si fue aprobado
+    if payment.get("status") == "approved":
+
+        pedido_id = payment.get("external_reference")
+
+        try:
+
+            pedido = Pedido.objects.get(id=pedido_id)
+
+            pedido.pagado = True
+
+            pedido.estado = "en_preparacion"
+
+            pedido.mp_payment_id = str(payment_id)
+
+            pedido.fecha_pago = timezone.now()
+
+            pedido.save()
+
+            print(f"Pedido {pedido.id} PAGADO")
+
+        except Pedido.DoesNotExist:
+
+            print("Pedido no encontrado")
+
+    return HttpResponse(status=200)
