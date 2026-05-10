@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import Producto, Pedido, PedidoItem, Perfil
-
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 # ── Home ─────────────────────────────────────
 def home(request):
@@ -327,7 +328,7 @@ def perfil(request):
         perfil_obj = Perfil.objects.get(user=request.user)
     except Perfil.DoesNotExist:
         perfil_obj = None
-    pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')
+    pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')[:3]
     return render(request, 'productos/perfil.html', {
         'perfil': perfil_obj,
         'pedidos': pedidos,
@@ -522,8 +523,39 @@ def editar_precio(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
 
     if request.method == 'POST':
-        nuevo_precio = request.POST['precio']
-        producto.precio = nuevo_precio
-        producto.save()
+        nuevo_precio = request.POST.get('precio', '').strip()
+        if nuevo_precio:
+            producto.precio = nuevo_precio
+            producto.save()
 
     return redirect('/panel/')
+
+def cambiar_estado(request, pedido_id):
+    if not request.user.is_staff:
+        return JsonResponse({'ok': False}, status=403)
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+        nuevo_estado = request.POST.get('estado')
+        estados_validos = ['pendiente', 'en_preparacion', 'enviado', 'entregado']
+        if nuevo_estado in estados_validos:
+            pedido.estado = nuevo_estado
+            pedido.save()
+        return redirect('/panel/')
+    return JsonResponse({'ok': False})
+
+
+def cambiar_stock_ajax(request, producto_id, accion):
+    if request.method == 'POST' and request.user.is_staff:
+        producto = get_object_or_404(Producto, id=producto_id)
+        if accion == 'sumar':
+            producto.stock += 1
+        elif accion == 'restar' and producto.stock > 0:
+            producto.stock -= 1
+        producto.save()
+        return JsonResponse({'ok': True, 'stock': producto.stock})
+    return JsonResponse({'ok': False})
+
+
+def stock_actual(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    return JsonResponse({'stock': producto.stock})

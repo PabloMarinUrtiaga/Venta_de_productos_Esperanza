@@ -36,7 +36,6 @@ async function obtenerCatalogo() {
     const data = await res.json();
     data.forEach(p => { catalogoCache[p.id] = p; });
   } catch {
-    // Fallback con precios de demostración
     catalogoCache = {
       1:  { id:1,  nombre: 'Leche Entera 1L',        precio: '350.00'  },
       2:  { id:2,  nombre: 'Queso Cremoso 500g',      precio: '980.00'  },
@@ -107,19 +106,23 @@ function renderCarrito() {
   const containerEl= document.getElementById('carrito-container');
   actualizarContadorNav();
 
+  // Ocultar mientras renderiza para evitar parpadeo
+  containerEl.style.display = 'none';
+
   const ids = Object.keys(carrito);
 
   if (ids.length === 0) {
-    // Carrito vacío
     containerEl.style.gridTemplateColumns = '1fr';
     itemsEl.innerHTML = `
       <div class="carrito-vacio">
         <div class="icono-vacio">🛒</div>
         <h3>El carrito está vacío</h3>
         <p style="margin-bottom:1.5rem;">Agregá productos desde el catálogo.</p>
-        <a href="/productos/" class="btn btn-rojo">Ver catálogo</a>
+        <a href="/productos/" class="btn btn-rojo" style="display:block; text-align:center; margin-bottom:0.8rem;">Ver catálogo</a>
+        <a href="/repetir-pedido/" class="btn" style="display:block; text-align:center; background:var(--verde); color:#fff;">🔁 Repetir último pedido</a>
       </div>`;
     document.getElementById('carrito-resumen').style.display = 'none';
+    containerEl.style.display = 'block';
     return;
   }
 
@@ -164,9 +167,12 @@ function renderCarrito() {
       </div>`;
   });
 
-  itemsEl.innerHTML  = itemsHTML  || '<p style="color:var(--gris); padding:1rem;">Sin datos de productos. Conectá el backend.</p>';
+  itemsEl.innerHTML  = itemsHTML || '<p style="color:var(--gris); padding:1rem;">Sin datos de productos.</p>';
   lineasEl.innerHTML = lineasHTML;
   totalEl.textContent = `$${total.toFixed(2)}`;
+
+  // Mostrar ahora que está listo
+  containerEl.style.display = 'grid';
 }
 
 // ── Init ─────────────────────────────────────
@@ -175,6 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCarrito();
 });
 
+// ── Finalizar compra ─────────────────────────
 async function finalizarCompra() {
   const carrito = getCarrito();
   const csrfToken = document.cookie.split(';')

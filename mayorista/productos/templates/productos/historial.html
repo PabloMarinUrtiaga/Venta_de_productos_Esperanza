@@ -7,6 +7,12 @@
   <title>Historial de pedidos — Esperanza</title>
   <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
   <style>
+    .badge-estado { display:inline-block; padding:0.2rem 0.6rem; border-radius:50px; font-size:0.72rem; font-weight:800; }
+    .estado-pendiente      { background:#FEF9C3; color:#854D0E; border:1px solid #F9C124; }
+    .estado-en_preparacion { background:#FFF3E0; color:#E65100; border:1px solid #FF6B35; }
+    .estado-enviado        { background:#EFF6FF; color:#1565C0; border:1px solid #93C5FD; }
+    .estado-entregado      { background:#F0FFF6; color:#1a7a45; border:1px solid #2ECC71; }
+
     body { min-height: 100vh; position: relative; padding-bottom: 80px; }
     footer { position: absolute; bottom: 0; width: 100%; }
 
@@ -166,7 +172,13 @@
             <div class="pedido-hist-info">
               <strong>{{ pedido.fecha|date:"d/m/Y — H:i" }}</strong><br>
               {% if pedido.entrega == 'domicilio' %}🏠 Envío a domicilio{% else %}🏪 Retiro en el local{% endif %}
-              · 
+              · <span class="badge-estado estado-{{ pedido.estado }}">
+                  {% if pedido.estado == 'pendiente' %}⏳ Pendiente
+                  {% elif pedido.estado == 'en_preparacion' %}🔧 En preparación
+                  {% elif pedido.estado == 'enviado' %}🚚 Enviado
+                  {% elif pedido.estado == 'entregado' %}✅ Entregado
+                  {% endif %}
+            </span>
               {% if pedido.pago == 'transferencia' %}🏦 Transferencia{% elif pedido.pago == 'efectivo' %}💵 Efectivo{% else %}💙 MercadoPago{% endif %}
             </div>
             <div class="pedido-hist-total">${{ pedido.total }}</div>

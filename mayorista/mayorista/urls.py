@@ -5,10 +5,18 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              checkout, registro, login_view, historial,
                              logout_view, perfil, detalle_pedido, panel,
                              agregar_producto, eliminar_producto, cambiar_stock,
+<<<<<<< HEAD
                              editar_precio, repetir_pedido, compra_exitosa)
+=======
+                             editar_precio, repetir_pedido, compra_exitosa,
+                             cambiar_estado, cambiar_stock_ajax, stock_actual)
+>>>>>>> 551111c5916045a8e94234e3f1c3118629dbd39b
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('cambiar-estado/<int:pedido_id>/', cambiar_estado),
+    path('cambiar-stock-ajax/<int:producto_id>/<str:accion>/', cambiar_stock_ajax),
+    path('stock-actual/<int:producto_id>/', stock_actual),
     path('historial/<int:user_id>/', historial),
     path('sincronizar-carrito/', sincronizar_carrito),
     path('admin/', admin.site.urls),
