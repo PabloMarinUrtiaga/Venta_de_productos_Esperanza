@@ -6,8 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import Producto, Pedido, PedidoItem, Perfil
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+import mercadopago, json
+from django.conf import settings
+from django.db import transaction
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
 
 # ── Home ─────────────────────────────────────
 def home(request):
@@ -85,7 +91,6 @@ def vaciar_carrito(request):
 
 # ── Sincronizacion Carrito ────────────────────────────
 
-import json
 
 def sincronizar_carrito(request):
     if request.method == 'POST':
@@ -123,30 +128,31 @@ def repetir_pedido(request):
         'carrito_json': carrito
     })
 
-# ── Checkout ──────────────────────────────────
-from django.db import transaction
-from django.contrib import messages
+#CHECKOUT
 
 @login_required
 def checkout(request):
+
     carrito = request.session.get('carrito', {})
 
     if not carrito:
         return redirect('/carrito/')
 
-    # 👤 Perfil (opcional para autocompletar)
+    # 👤 Perfil
     try:
         perfil = Perfil.objects.get(user=request.user)
     except Perfil.DoesNotExist:
         perfil = None
 
-    # 🧾 PREVIEW (para GET)
+    # 🧾 PREVIEW
     items = []
     total = 0
 
     for producto_id, cantidad in carrito.items():
+
         try:
             producto = Producto.objects.get(id=producto_id)
+
             subtotal = producto.precio * cantidad
             total += subtotal
 
@@ -159,89 +165,187 @@ def checkout(request):
         except Producto.DoesNotExist:
             pass
 
-    # =========================
+    # ==================================================
     # 🚀 POST → PROCESAR COMPRA
-    # =========================
+    # ==================================================
     if request.method == 'POST':
 
         with transaction.atomic():
 
             productos_bloqueados = []
-            total = 0  # 🔥 recalculamos SIEMPRE con datos reales
+            total = 0
 
-            # 🔒 VALIDAR + BLOQUEAR STOCK
+            # 🔒 VALIDAR STOCK
             for producto_id, cantidad in carrito.items():
+
                 try:
-                    producto = Producto.objects.select_for_update().get(id=producto_id)
+                    producto = Producto.objects.select_for_update().get(
+                        id=producto_id
+                    )
 
                     if cantidad <= 0:
-                        messages.error(request, "Cantidad inválida en el carrito")
+                        messages.error(
+                            request,
+                            "Cantidad inválida en el carrito"
+                        )
                         return redirect('/carrito/')
 
                     if producto.stock < cantidad:
+
                         messages.error(
                             request,
                             f"No hay suficiente stock de {producto.nombre}. Disponible: {producto.stock}"
                         )
+
                         return redirect('/carrito/')
 
                     subtotal = producto.precio * cantidad
                     total += subtotal
 
-                    productos_bloqueados.append((producto, cantidad))
+                    productos_bloqueados.append(
+                        (producto, cantidad)
+                    )
 
                 except Producto.DoesNotExist:
-                    messages.error(request, "Un producto ya no existe")
+
+                    messages.error(
+                        request,
+                        "Un producto ya no existe"
+                    )
+
                     return redirect('/carrito/')
 
+            # ==================================================
             # 🧾 CREAR PEDIDO
+            # ==================================================
             pedido = Pedido.objects.create(
-                user          = request.user,
-                total         = total,
-                nombre        = request.POST.get('nombre', ''),
-                apellido      = request.POST.get('apellido', ''),
-                email         = request.POST.get('email', ''),
-                telefono      = request.POST.get('telefono', ''),
-                entrega       = request.POST.get('entrega', 'retiro'),
-                direccion     = request.POST.get('direccion', ''),
-                piso_depto    = request.POST.get('piso_depto', ''),
-                localidad     = request.POST.get('localidad', ''),
-                codigo_postal = request.POST.get('codigo_postal', ''),
-                notas_envio   = request.POST.get('notas_envio', ''),
-                pago          = request.POST.get('pago', 'transferencia'),
-                notas         = request.POST.get('notas', ''),
+
+                user=request.user,
+                total=total,
+
+                nombre=request.POST.get('nombre', ''),
+                apellido=request.POST.get('apellido', ''),
+                email=request.POST.get('email', ''),
+                telefono=request.POST.get('telefono', ''),
+
+                entrega=request.POST.get('entrega', 'retiro'),
+
+                direccion=request.POST.get('direccion', ''),
+                piso_depto=request.POST.get('piso_depto', ''),
+                localidad=request.POST.get('localidad', ''),
+                codigo_postal=request.POST.get('codigo_postal', ''),
+
+                notas_envio=request.POST.get('notas_envio', ''),
+
+                pago=request.POST.get('pago', 'transferencia'),
+
+                notas=request.POST.get('notas', ''),
             )
 
-            # 📦 CREAR ITEMS + DESCONTAR STOCK
+            # ==================================================
+            # 📦 ITEMS + DESCONTAR STOCK
+            # ==================================================
             for producto, cantidad in productos_bloqueados:
 
                 PedidoItem.objects.create(
-                    pedido   = pedido,
-                    producto = producto,
-                    cantidad = cantidad,
-                    precio   = producto.precio,
+                    pedido=pedido,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio=producto.precio,
                 )
 
                 producto.stock -= cantidad
-                producto.save(update_fields=['stock'])  # ⚡ optimizado
+
+                producto.save(
+                    update_fields=['stock']
+                )
 
         # 🧹 limpiar carrito
         request.session['carrito'] = {}
 
-        messages.success(request, "Compra realizada con éxito")
+        # ==================================================
+        # 💙 MERCADO PAGO
+        # ==================================================
+        if pedido.pago == 'mercadopago':
 
-        return redirect(f'/compra-exitosa/{pedido.id}/')
-        
+            preference_data = {
 
-    # =========================
-    # 👀 GET → MOSTRAR CHECKOUT
-    # =========================
+                "items": [
+                    {
+                        "title": f"Pedido #{pedido.id} - Esperanza",
+
+                        "quantity": 1,
+
+                        "currency_id": "ARS",
+
+                        "unit_price": float(pedido.total)
+                    }
+                ],
+
+                "back_urls": {
+
+                    "success":
+                        f"http://127.0.0.1:8000/compra-exitosa/{pedido.id}/",
+
+                    "failure":
+                        "http://127.0.0.1:8000/carrito/",
+
+                    "pending":
+                        "http://127.0.0.1:8000/carrito/",
+                },
+
+                
+
+                "external_reference": str(pedido.id),
+            }
+
+            preference_response = sdk.preference().create(
+                preference_data
+            )
+
+            print(preference_response)
+
+            preference = preference_response.get("response", {})
+
+            if "id" not in preference:
+
+                messages.error(
+                    request,
+                    "Error al conectar con Mercado Pago"
+                )
+
+                return redirect('/carrito/')
+
+            pedido.mp_preference_id = preference.get("id")
+
+            pedido.save()
+
+            return redirect(
+                preference.get("init_point")
+            )
+
+        # ==================================================
+        # 💵 EFECTIVO / TRANSFERENCIA
+        # ==================================================
+        messages.success(
+            request,
+            "Compra realizada con éxito"
+        )
+
+        return redirect(
+            f'/compra-exitosa/{pedido.id}/'
+        )
+
+    # ==================================================
+    # 👀 GET
+    # ==================================================
     return render(request, 'productos/checkout_form.html', {
+
         'items': items,
         'total': total,
         'perfil': perfil,
-})
-
+    })
+    
 #── Compra exitosa ─────────────────────────────
 @login_required
 def compra_exitosa(request, pedido_id):
@@ -559,3 +663,95 @@ def cambiar_stock_ajax(request, producto_id, accion):
 def stock_actual(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'stock': producto.stock})
+
+#Editar el stock por mas de a 1
+@login_required
+def editar_stock(request, producto_id):
+
+    if not request.user.is_staff:
+        return redirect('/')
+
+    producto = get_object_or_404(Producto, id=producto_id)
+
+    if request.method == 'POST':
+
+        nuevo_stock = request.POST.get('stock', '').strip()
+
+        if nuevo_stock != '':
+
+            try:
+                nuevo_stock = int(nuevo_stock)
+
+                if nuevo_stock >= 0:
+                    producto.stock = nuevo_stock
+                    producto.save()
+
+            except ValueError:
+                pass
+
+    return redirect('/panel/')
+
+#WEBHOOK
+
+@csrf_exempt
+def mp_webhook(request):
+
+    if request.method != "POST":
+        return HttpResponse(status=400)
+
+    data = json.loads(request.body)
+
+    print("WEBHOOK RECIBIDO:")
+    print(data)
+
+    # Solo pagos
+    if data.get("type") != "payment":
+        return HttpResponse(status=200)
+
+    payment_id = data.get("data", {}).get("id")
+
+    if not payment_id:
+        return HttpResponse(status=200)
+
+    # Buscar info del pago en Mercado Pago
+    payment_info = sdk.payment().get(payment_id)
+
+    payment = payment_info.get("response", {})
+
+    print(payment)
+
+    # Verificar si fue aprobado
+    if payment.get("status") == "approved":
+
+        pedido_id = payment.get("external_reference")
+
+        try:
+
+            pedido = Pedido.objects.get(id=pedido_id)
+
+            pedido.pagado = True
+
+            pedido.estado = "en_preparacion"
+
+            pedido.mp_payment_id = str(payment_id)
+
+            pedido.fecha_pago = timezone.now()
+
+            pedido.save()
+
+            print(f"Pedido {pedido.id} PAGADO")
+
+        except Pedido.DoesNotExist:
+
+            print("Pedido no encontrado")
+
+    return HttpResponse(status=200)
+
+def error_404(request, exception=None):
+    return render(request, 'productos/404.html', status=404)
+
+def error_500(request):
+    return render(request, 'productos/500.html', status=500)
+
+def error_403(request, exception=None):
+    return render(request, 'productos/403.html', status=403)

@@ -212,9 +212,12 @@ body { min-height: 100%; display: flex; flex-direction: column; }
 
 
     <ul class="navbar-links">
+      
+      <!-- Panel interno-->>
   {% if request.user.is_staff %}
-    <li><a href="/panel/" class="btn-admin">⚙️ Panel interno</a></li>
+    <li><a href="/panel/" class="btn-panel">⚙️ Panel interno</a></li>
   {% endif %}
+
   <li><a href="/productos/">Inicio</a></li>
   <li><a href="/productos/">Productos</a></li>
   <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
@@ -303,11 +306,18 @@ body { min-height: 100%; display: flex; flex-direction: column; }
               <div class="pedido-total">${{ pedido.total }}</div>
             </div>
           {% endfor %}
+           <div style="text-align:center; padding:1rem; border-top:1px solid #f0f0ec;">
+            <a href="/historial/" style="color:var(--rojo); font-weight:800; font-size:0.88rem; text-decoration:none;">
+              Ver todos los pedidos →
+            </a>
+          </div>
+          
         {% else %}
           <div class="perfil-empty">
             📦 Todavía no realizaste ningún pedido.<br>
             <a href="/productos/" style="color:var(--rojo); font-weight:800; text-decoration:none;">Ver catálogo →</a>
           </div>
+          
         {% endif %}
       </div>
 

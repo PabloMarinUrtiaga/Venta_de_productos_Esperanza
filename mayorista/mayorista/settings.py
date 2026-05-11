@@ -122,7 +122,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -134,3 +134,8 @@ EMAIL_HOST_USER = 'aab697001@smtp-brevo.com'          # 👈 tu gmail real
 EMAIL_HOST_PASSWORD = 'xsmtpsib-fe069b479e5f78ad932b258b2c56af00f74c6f0d6f8b111a3c942d07e531914a-Qmf7Mbw9iCVZE0eS'         # 👈 la que generaste
 
 DEFAULT_FROM_EMAIL = 'Esperanza <distribuidoraesperanza15@gmail.com>'
+
+# Mercado Pago
+
+MP_ACCESS_TOKEN = 'APP_USR-3871022946299660-050923-f4ae84464e697076e8feada5260c0318-3387807323'
+MP_PUBLIC_KEY = 'APP_USR-96f3c807-e3b1-4c3a-8020-c260700df6a8'

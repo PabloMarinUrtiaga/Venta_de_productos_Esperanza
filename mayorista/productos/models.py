@@ -26,17 +26,19 @@ class Pedido(models.Model):
         ('efectivo',      'Efectivo'),
         ('mercadopago',   'MercadoPago'),
     ]
-    ESTADO_CHOICES = [
-        ('pendiente',      'Pendiente'),
-        ('en_preparacion', 'En preparación'),
-        ('enviado',        'Enviado'),
-        ('entregado',      'Entregado'),
+    ESTADOS_PEDIDO = [
+    ('pendiente_pago', 'Pendiente de pago'),
+    ('pagado', 'Pagado'),
+    ('en_preparacion', 'En preparación'),
+    ('enviado', 'Enviado'),
+    ('entregado', 'Entregado'),
+    ('cancelado', 'Cancelado'),
     ]
 
     user          = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     fecha         = models.DateTimeField(auto_now_add=True)
     total         = models.DecimalField(max_digits=10, decimal_places=2)
-    estado        = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    estado = models.CharField(max_length=30,choices=ESTADOS_PEDIDO,default='pendiente_pago')
 
     # Datos del cliente
     nombre        = models.CharField(max_length=100, blank=True)
@@ -57,6 +59,15 @@ class Pedido(models.Model):
 
     # Notas generales
     notas         = models.TextField(blank=True)
+    
+    #Mercado Pago
+    mp_preference_id = models.CharField(max_length=255,blank=True,null=True)
+
+    mp_payment_id = models.CharField(max_length=255,blank=True,null=True)
+
+    pagado = models.BooleanField(default=False)
+
+    fecha_pago = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Pedido #{self.id} — {self.nombre} {self.apellido} [{self.estado}]"

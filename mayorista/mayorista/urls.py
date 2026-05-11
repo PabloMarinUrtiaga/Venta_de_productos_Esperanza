@@ -6,7 +6,8 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              logout_view, perfil, detalle_pedido, panel,
                              agregar_producto, eliminar_producto, cambiar_stock,
                              editar_precio, repetir_pedido, compra_exitosa,
-                             cambiar_estado, cambiar_stock_ajax, stock_actual)
+                             cambiar_estado, cambiar_stock_ajax, stock_actual,
+                             mp_webhook, editar_stock,)
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -40,4 +41,10 @@ urlpatterns = [
     path('panel/producto/<int:producto_id>/precio/', editar_precio, name='editar_precio'),
     path('repetir-pedido/', repetir_pedido, name='repetir_pedido'),
     path('compra-exitosa/<int:pedido_id>/', compra_exitosa, name='compra_exitosa'),
+    path('webhook/mercadopago/', mp_webhook),
+    path('editar-stock/<int:producto_id>/',editar_stock,name='editar_stock'),
 ]
+
+handler404 = 'productos.views.error_404'
+handler500 = 'productos.views.error_500'
+handler403 = 'productos.views.error_403'
