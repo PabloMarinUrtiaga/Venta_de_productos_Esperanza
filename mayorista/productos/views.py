@@ -745,4 +745,17 @@ def mp_webhook(request):
 
             print("Pedido no encontrado")
 
+<<<<<<< HEAD
     return HttpResponse(status=200)
+=======
+    return HttpResponse(status=200)
+
+def error_404(request, exception=None):
+    return render(request, 'productos/404.html', status=404)
+
+def error_500(request):
+    return render(request, 'productos/500.html', status=500)
+
+def error_403(request, exception=None):
+    return render(request, 'productos/403.html', status=403)
+>>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2

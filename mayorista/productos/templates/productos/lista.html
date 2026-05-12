@@ -68,15 +68,20 @@
     <button class="filtro-btn" data-cat="Condimentos">Condimentos</button>
   </div>
 
-  <!-- PRODUCTOS -->
-  <div class="seccion-header" id="productos">
-    <h2>Catálogo</h2>
-    <small id="resultado-count" style="color:var(--gris); font-weight:700;"></small>
-  </div>
+ <!-- PRODUCTOS -->
+<div class="seccion-header" id="productos">
+  <h2>Catálogo</h2>
+  <small id="resultado-count" style="color:var(--gris); font-weight:700;"></small>
+</div>
 
-  <div class="productos-grid" id="productos-grid">
-    <!-- Generado por productos.js -->
-  </div>
+<div id="loader" style="text-align:center; padding:3rem;">
+  <div style="font-size:2.5rem; margin-bottom:1rem;">⏳</div>
+  <p style="font-weight:700; color:var(--gris);">Cargando productos...</p>
+</div>
+
+<div class="productos-grid" id="productos-grid" style="visibility:hidden; min-height:0;">
+  <!-- Generado por productos.js -->
+</div>
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
@@ -90,7 +95,7 @@
   localStorage.removeItem('carrito');
 </script>
 {% endif %}
-  <script src="{% static 'productos/js/productos.js' %}"></script>
+  <script src="{% static 'productos/js/productos.js' %}?v=2"></script>
 
   
 </body>

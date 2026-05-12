@@ -44,3 +44,7 @@ urlpatterns = [
     path('webhook/mercadopago/', mp_webhook),
     path('editar-stock/<int:producto_id>/',editar_stock,name='editar_stock'),
 ]
+
+handler404 = 'productos.views.error_404'
+handler500 = 'productos.views.error_500'
+handler403 = 'productos.views.error_403'

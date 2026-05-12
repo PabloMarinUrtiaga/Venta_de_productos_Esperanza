@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Página no encontrada — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .error-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .error-code {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(6rem, 20vw, 12rem);
+      line-height: 1;
+      color: var(--gris-claro);
+      letter-spacing: 8px;
+      margin-bottom: 0;
+    }
+    .error-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    .error-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: var(--oscuro);
+      margin-bottom: 0.5rem;
+    }
+    .error-desc {
+      color: var(--gris);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      max-width: 400px;
+    }
+    .error-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
+    <ul class="navbar-links">
+      <li><a href="/productos/">Productos</a></li>
+      <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
+    </ul>
+  </nav>
+
+  <div class="error-wrap">
+    <div class="error-code">404</div>
+    <div class="error-icon">🔍</div>
+    <h1 class="error-titulo">Página no encontrada</h1>
+    <p class="error-desc">La página que estás buscando no existe o fue movida a otra dirección.</p>
+    <div class="error-btns">
+      <a href="/productos/" class="btn btn-rojo">🛒 Ver catálogo</a>
+      <a href="/" class="btn btn-outline">⬅ Volver al inicio</a>
+    </div>
+  </div>
+
+  <footer>
+    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+  </footer>
+
+</body>
+</html>

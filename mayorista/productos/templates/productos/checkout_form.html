@@ -237,6 +237,16 @@
     }
   </style>
 </head>
+<<<<<<< HEAD
+=======
+<script>
+  document.getElementById('form-checkout').addEventListener('submit', function() {
+    const btn = document.getElementById('btn-confirmar');
+    btn.innerHTML = '⏳ Procesando...';
+    btn.disabled = true;
+  });
+</script>
+>>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2
 
 <body>
 
@@ -371,7 +381,11 @@
 
         <div class="checkout-section-body">
 
+<<<<<<< HEAD
           <div class="opcion-grid">
+=======
+          <div class="opcion-grid" style="grid-template-columns:1fr 1fr 1fr;">
+>>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2
 
             <!-- TRANSFERENCIA -->
             <label class="opcion-card seleccionado" id="label-transferencia">
@@ -519,7 +533,11 @@
         <span>${{ total }}</span>
       </div>
 
+<<<<<<< HEAD
       <button type="submit" class="btn-confirmar">
+=======
+      <button type="submit" class="btn-confirmar" id="btn-confirmar">
+>>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2
         ✅ Confirmar pedido
       </button>
 

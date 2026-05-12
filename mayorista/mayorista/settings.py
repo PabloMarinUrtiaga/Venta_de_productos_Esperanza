@@ -1,3 +1,9 @@
+
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 """
 Django settings for mayorista project.
 
@@ -20,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--_$apb)pf@n=8(+(032@0ogw%xog+6gy678)3!q%ap7yy%^-ap'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -122,18 +128,22 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'aab697001@smtp-brevo.com'          # 👈 tu gmail real
-EMAIL_HOST_PASSWORD = 'xsmtpsib-fe069b479e5f78ad932b258b2c56af00f74c6f0d6f8b111a3c942d07e531914a-Qmf7Mbw9iCVZE0eS'         # 👈 la que generaste
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')       # 👈 tu gmail real
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')         # 👈 la que generaste
 
+<<<<<<< HEAD
 DEFAULT_FROM_EMAIL = 'Esperanza <distribuidoraesperanza15@gmail.com>'
+=======
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+>>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2
 
 # Mercado Pago
 

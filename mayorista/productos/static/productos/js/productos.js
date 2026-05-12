@@ -65,6 +65,9 @@ function mostrarToast(msg) {
 
 // ── Render ───────────────────────────────────
 function renderProductos(lista) {
+  console.log('renderProductos llamado con', lista.length, 'productos');
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('productos-grid').style.visibility = 'visible';
   const grid  = document.getElementById('productos-grid');
   const count = document.getElementById('resultado-count');
   if (!grid) return;
@@ -100,6 +103,7 @@ function renderProductos(lista) {
 }
 
 function filtrarYRender() {
+  console.log('filtrarYRender llamado');
   let lista = todosLosProductos;
 
   if (categoriaActiva !== 'todos') {
@@ -168,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── API ──────────────────────────────────────
 async function cargarProductos() {
+  console.log('cargarProductos iniciado');
   const grid = document.getElementById('productos-grid');
 
   // Skeleton loading
