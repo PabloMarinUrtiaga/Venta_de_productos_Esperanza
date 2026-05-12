@@ -136,16 +136,12 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')       # 👈 tu gmail real
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')         # 👈 la que generaste
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')       
 
-<<<<<<< HEAD
-DEFAULT_FROM_EMAIL = 'Esperanza <distribuidoraesperanza15@gmail.com>'
-=======
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
->>>>>>> 90387611709b6bbb7176fc3dac0d34d9a62d67e2
 
 # Mercado Pago
 
-MP_ACCESS_TOKEN = 'APP_USR-3871022946299660-050923-f4ae84464e697076e8feada5260c0318-3387807323'
-MP_PUBLIC_KEY = 'APP_USR-96f3c807-e3b1-4c3a-8020-c260700df6a8'
+MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
+MP_PUBLIC_KEY =  os.environ.get('MP_PUBLIC_KEY')
