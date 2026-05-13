@@ -382,11 +382,17 @@
               </form>
 
               <!-- ELIMINAR -->
-              <a href="{% url 'eliminar_producto' producto.id %}"
-                class="btn-sm btn-danger-sm"
-                onclick="return confirm('¿Seguro que querés eliminar {{ producto.nombre }}?')">
-                🗑 Eliminar
-              </a>
+              <form method="POST"
+                    action="{% url 'eliminar_producto' producto.id %}"
+                    onsubmit="return confirm('¿Seguro que querés eliminar {{ producto.nombre }}?')">
+
+                {% csrf_token %}
+
+                <button type="submit" class="btn-sm btn-danger-sm">
+                  🗑 Eliminar
+                </button>
+
+              </form>
             </div>
           </div>
         {% empty %}

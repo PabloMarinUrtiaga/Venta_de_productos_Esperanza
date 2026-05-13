@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_ratelimit',
     'productos',
+    
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8}
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -104,7 +108,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# ─────────────────────────────
+# CACHE / RATELIMIT
+# ─────────────────────────────
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+RATELIMIT_USE_CACHE = 'default'
+
+SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -136,12 +152,12 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')       # 👈 tu gmail real
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')         # 👈 la que generaste
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')       
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
 # Mercado Pago
 
 MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
-MP_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY')
+MP_PUBLIC_KEY =  os.environ.get('MP_PUBLIC_KEY')
