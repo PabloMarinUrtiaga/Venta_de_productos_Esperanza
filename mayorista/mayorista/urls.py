@@ -4,7 +4,7 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              ver_carrito, eliminar_del_carrito, vaciar_carrito,
                              checkout, registro, login_view, historial,
                              logout_view, perfil, detalle_pedido, panel,
-                             agregar_producto, eliminar_producto, cambiar_stock,
+                             agregar_producto, eliminar_producto, 
                              editar_precio, repetir_pedido, compra_exitosa,
                              cambiar_estado, cambiar_stock_ajax, stock_actual,
                              mp_webhook, editar_stock,)
@@ -37,7 +37,6 @@ urlpatterns = [
     path('panel/', panel, name='panel'),
     path('panel/agregar/', agregar_producto, name='agregar_producto'),
     path('panel/eliminar/<int:producto_id>/', eliminar_producto, name='eliminar_producto'),
-    path('panel/stock/<int:producto_id>/<str:accion>/', cambiar_stock, name='cambiar_stock'),
     path('panel/producto/<int:producto_id>/precio/', editar_precio, name='editar_precio'),
     path('repetir-pedido/', repetir_pedido, name='repetir_pedido'),
     path('compra-exitosa/<int:pedido_id>/', compra_exitosa, name='compra_exitosa'),

@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_ratelimit',
     'productos',
+    
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8}
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -104,7 +108,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# ─────────────────────────────
+# CACHE / RATELIMIT
+# ─────────────────────────────
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+RATELIMIT_USE_CACHE = 'default'
+
+SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
