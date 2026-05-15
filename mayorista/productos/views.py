@@ -121,6 +121,8 @@ def ver_carrito(request):
 
 # ── Eliminar del carrito ──────────────────────
 def eliminar_del_carrito(request, producto_id):
+    if request.method != 'POST':
+        return redirect('/carrito/')
     carrito = request.session.get('carrito', {})
     if str(producto_id) in carrito:
         del carrito[str(producto_id)]
@@ -130,6 +132,8 @@ def eliminar_del_carrito(request, producto_id):
 
 # ── Vaciar carrito ────────────────────────────
 def vaciar_carrito(request):
+    if request.method != 'POST':
+        return redirect('/carrito/')
     request.session['carrito'] = {}
     return redirect('/carrito/')
 
@@ -1279,6 +1283,8 @@ def cambiar_stock_ajax(request, producto_id, accion):
     
 @login_required
 def stock_actual(request, producto_id):
+    if not request.user.is_staff:
+        return JsonResponse({'ok': False}, status=403)
     producto = get_object_or_404(Producto, id=producto_id)
     return JsonResponse({'stock': producto.stock})
 
