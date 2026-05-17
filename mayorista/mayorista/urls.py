@@ -17,7 +17,7 @@ urlpatterns = [
     path('historial/<int:user_id>/', historial),
     path('sincronizar-carrito/', sincronizar_carrito),
     path('admin/', admin.site.urls),
-    path('', home),
+    path('', lista_productos),
     path('productos/', lista_productos),
     path('agregar/<int:producto_id>/', agregar_al_carrito),
     path('carrito/', ver_carrito),
