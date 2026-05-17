@@ -180,3 +180,6 @@ MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
 MP_PUBLIC_KEY =  os.environ.get('MP_PUBLIC_KEY')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

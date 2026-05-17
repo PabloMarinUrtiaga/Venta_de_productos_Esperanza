@@ -532,9 +532,9 @@ def checkout(request):
                 ],
 
                 'external_reference': str(pedido.id),
-
+#CAMBIAR EN PRODUCCION#########################################################################
                 'back_urls': {
-                    'success': f'http://127.0.0.1:8000/compra-exitosa/{pedido.id}/',
+                    'success': f'http://127.0.0.1:8000/compra-exitosa/{pedido.id}/',#HTTPS_TODO
                     'failure': 'http://127.0.0.1:8000/carrito/',
                     'pending': 'http://127.0.0.1:8000/carrito/',
                 },
@@ -543,14 +543,20 @@ def checkout(request):
 
                 'notification_url': 'https://TU-URL/webhook/mercadopago/',
             }
-
+##############################################################################################
             preference_response = sdk.preference().create(preference_data)
 
-            if preference_response.get('status') != 201:
+            status = preference_response.get('status')
+
+            if status not in [200, 201]:
+                print("ERROR MP STATUS:", status)
+                print(preference_response)
+
                 messages.error(request, 'Error al conectar con MercadoPago')
                 return redirect('/carrito/')
 
             preference = preference_response['response']
+            print(preference_response)
 
             pedido.mp_preference_id = preference.get('id', '')
             pedido.save()
