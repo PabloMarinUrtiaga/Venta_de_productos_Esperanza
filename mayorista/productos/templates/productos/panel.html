@@ -324,29 +324,137 @@
 
         {% for producto in productos %}
           <div class="producto-panel-card">
+
+            <!-- INFO PRODUCTO -->
             <div>
-              <div class="prod-panel-nombre">{{ producto.nombre }}</div>
-              <div class="prod-panel-precio">${{ producto.precio }}</div>
+
+              <div class="prod-panel-nombre">
+                {{ producto.nombre }}
+              </div>
+
+              <!-- PRECIO -->
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+
+                <div class="prod-panel-precio">
+
+                  {% if producto.oferta_activa and producto.precio_oferta %}
+
+                    <span style="
+                      text-decoration:line-through;
+                      color:#888;
+                      font-size:1rem;
+                      margin-right:0.5rem;
+                    ">
+                      ${{ producto.precio }}
+                    </span>
+
+                    <span style="color:#E53935;">
+                      ${{ producto.precio_oferta }}
+                    </span>
+
+                  {% else %}
+
+                    ${{ producto.precio }}
+
+                  {% endif %}
+
+                </div>
+
+                <!-- CHECK OFERTA -->
+                <form method="POST"
+                      action="{% url 'editar_oferta' producto.id %}"
+                      style="display:flex; align-items:center; gap:0.4rem;">
+
+                  {% csrf_token %}
+
+                  <input type="hidden"
+                        name="precio_oferta"
+                        value="{{ producto.precio_oferta|default:'' }}">
+
+                  <input type="checkbox"
+                        name="oferta_activa"
+                        onchange="this.form.submit()"
+
+                        {% if producto.oferta_activa %}
+                          checked
+                        {% endif %}>
+
+                  <span style="
+                    font-size:0.85rem;
+                    font-weight:700;
+                    color:#555;
+                  ">
+                    Oferta
+                  </span>
+
+                </form>
+
+              </div>
+
+              <!-- STOCK -->
               <div class="prod-panel-stock" id="stock-{{ producto.id }}">
                 Stock: {{ producto.stock }}
+
                 {% if producto.stock <= 0 %}
                   <span class="badge-sinstock">🚨 SIN STOCK</span>
+
                 {% elif producto.stock <= 5 %}
                   <span class="badge-critico">🚨 Crítico</span>
+
                 {% elif producto.stock <= 20 %}
                   <span class="badge-bajo">⚠️ Bajo</span>
                 {% endif %}
               </div>
+
             </div>
+
+            <!-- ACCIONES -->
             <div class="prod-panel-actions">
-              <form method="POST" action="{% url 'editar_precio' producto.id %}" class="form-precio">
+
+              <!-- EDITAR PRECIO -->
+              <form method="POST"
+                    action="{% url 'editar_precio' producto.id %}"
+                    class="form-precio">
+
                 {% csrf_token %}
-                <input type="number" name="precio" placeholder="Nuevo precio" step="0.01"/>
-                <button type="submit" class="btn-sm btn-success-sm">Actualizar</button>
+
+                <input type="number"
+                      name="precio"
+                      placeholder="Nuevo precio"
+                      step="0.01">
+
+                <button type="submit" class="btn-sm btn-success-sm">
+                  Actualizar
+                </button>
+
               </form>
+
+              <!-- EDITAR OFERTA -->
+              <form method="POST"
+                    action="{% url 'editar_oferta' producto.id %}"
+                    class="form-precio">
+
+                {% csrf_token %}
+
+                <input type="number"
+                      name="precio_oferta"
+                      placeholder="Precio oferta"
+                      step="0.01"
+                      value="{{ producto.precio_oferta|default:'' }}">
+
+                <input type="hidden"
+                      name="oferta_activa"
+                      value="{% if producto.oferta_activa %}on{% endif %}">
+
+                <button type="submit" class="btn-sm btn-warning-sm">
+                  🔥 Actualizar oferta
+                </button>
+
+              </form>
+
+              <!-- BOTONES STOCK -->
               <div class="stock-actions">
 
-                <!-- Botones rápidos -->
                 <button onclick='cambiarStock({{ producto.id }}, "sumar")'
                         class="btn-sm btn-stock-sm"
                         title="Sumar stock">
@@ -363,12 +471,12 @@
 
               </div>
 
-              <!-- MODIFICAR STOCK MANUAL -->
+              <!-- EDITAR STOCK -->
               <form method="POST"
                     action="{% url 'editar_stock' producto.id %}"
                     class="form-precio"
                     style="margin-top:0.5rem;">
-                    
+
                 {% csrf_token %}
 
                 <input type="number"
@@ -379,6 +487,7 @@
                 <button type="submit" class="btn-sm btn-primary-sm">
                   📦 Stock
                 </button>
+
               </form>
 
               <!-- ELIMINAR -->
@@ -393,10 +502,14 @@
                 </button>
 
               </form>
+
             </div>
+
           </div>
         {% empty %}
-          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron productos.</p>
+          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">
+            No se encontraron productos.
+          </p>
         {% endfor %}
 
       </div>

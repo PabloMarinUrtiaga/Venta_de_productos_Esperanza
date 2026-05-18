@@ -1362,6 +1362,128 @@ def editar_stock(request, producto_id):
 
     return redirect('/panel/')
 
+#OFERTAS:
+@login_required
+def editar_oferta(request, producto_id):
+
+    # 🔒 Solo admin
+    if not request.user.is_staff:
+        messages.error(request, 'No autorizado')
+        return redirect('/')
+
+    # 🔒 Solo POST
+    if request.method != 'POST':
+        messages.error(request, 'Método inválido')
+        return redirect('/panel/')
+
+    producto = get_object_or_404(
+        Producto,
+        id=producto_id
+    )
+
+    # ─────────────────────────────
+    # CHECKBOX
+    # ─────────────────────────────
+    oferta_activa = bool(
+        request.POST.get('oferta_activa')
+    )
+
+    # ─────────────────────────────
+    # INPUT
+    # ─────────────────────────────
+    precio_oferta_input = request.POST.get(
+        'precio_oferta',
+        ''
+    ).strip()
+
+    # ─────────────────────────────
+    # ACTUALIZAR PRECIO SI VINO
+    # ─────────────────────────────
+    if precio_oferta_input != '':
+
+        if len(precio_oferta_input) > 20:
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        try:
+
+            precio_oferta = Decimal(
+                precio_oferta_input
+            )
+
+        except InvalidOperation:
+
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        # 🔒 NaN / infinito
+        if not precio_oferta.is_finite():
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Mayor a 0
+        if precio_oferta <= 0:
+            messages.error(
+                request,
+                'La oferta debe ser mayor a 0'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Máximo 2 decimales
+        if precio_oferta.as_tuple().exponent < -2:
+            messages.error(
+                request,
+                'Máximo 2 decimales'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Menor al precio normal
+        if precio_oferta >= producto.precio:
+            messages.error(
+                request,
+                'La oferta debe ser menor al precio normal'
+            )
+            return redirect('/panel/')
+
+        producto.precio_oferta = precio_oferta
+
+    # ─────────────────────────────
+    # ACTIVAR / DESACTIVAR
+    # ─────────────────────────────
+    producto.oferta_activa = oferta_activa
+
+    # 🔒 No permitir activar sin precio
+    if (
+        producto.oferta_activa
+        and not producto.precio_oferta
+    ):
+        messages.error(
+            request,
+            'Primero cargá un precio de oferta'
+        )
+        return redirect('/panel/')
+
+    producto.save(update_fields=[
+        'precio_oferta',
+        'oferta_activa'
+    ])
+
+    messages.success(
+        request,
+        f'Oferta actualizada para {producto.nombre}'
+    )
+
+    return redirect('/panel/')
+
 # WEBHOOK
 @csrf_exempt
 def mp_webhook(request):
