@@ -148,6 +148,29 @@
       letter-spacing: 0.5px;
     }
 
+    @media (max-width: 500px) {
+      .items-header { display: none; }
+      .items-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 0.3rem 0.5rem;
+        padding: 0.9rem 1.2rem;
+      }
+      .item-nombre {
+        grid-column: 1 / -1;
+        font-size: 0.95rem;
+      }
+      .item-val:first-of-type::before { content: "Precio: "; font-size: 0.7rem; color: var(--gris); font-weight: 800; }
+      .item-val:last-of-type::before  { content: "Cant: ";   font-size: 0.7rem; color: var(--gris); font-weight: 800; }
+      .item-subtotal {
+        grid-column: 1 / -1;
+        font-size: 1.2rem;
+        border-top: 1px solid #f0f0ec;
+        padding-top: 0.3rem;
+        margin-top: 0.2rem;
+      }
+    }
+
     .detalle-footer-row {
       display: flex;
       justify-content: space-between;
@@ -202,7 +225,10 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPERANZA</a>
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
       {% if request.user.is_authenticated %}
@@ -329,6 +355,23 @@
   <footer>
     <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
   </footer>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>

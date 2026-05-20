@@ -136,6 +136,20 @@
     .badge-bajo     { color: var(--naranja); font-weight: 800; }
 
     .prod-panel-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    
+    @media (max-width: 650px) {
+      .producto-panel-card {
+        grid-template-columns: 1fr;
+      }
+      .prod-panel-actions {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .form-precio input {
+        width: 90px;
+      }
+    }
 
     .form-precio { display: flex; gap: 0.4rem; align-items: center; }
     .form-precio input {
@@ -202,22 +216,17 @@
     }
     .pedido-panel-row:last-child { border-bottom: none; }
 
-    .pedido-panel-id {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.2rem;
-      color: var(--oscuro);
-      letter-spacing: 0.5px;
-      min-width: 80px;
-    }
-
-    .pedido-panel-info { font-size: 0.82rem; font-weight: 600; color: var(--gris); }
-    .pedido-panel-info strong { color: var(--oscuro); }
-
-    .pedido-panel-total {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem;
-      color: var(--rojo);
-      white-space: nowrap;
+    @media (max-width: 650px) {
+      .pedido-panel-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.5rem;
+        padding: 1rem 0;
+      }
+      .pedido-panel-id   { grid-column: 1 / -1; font-size: 1.1rem; }
+      .pedido-panel-info { grid-column: 1 / -1; }
+      .pedido-panel-total { font-size: 1.2rem; }
+      .panel-wrap { padding: 0 1rem; }
     }
 
     /* BADGE ESTADO */
@@ -278,7 +287,10 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
       {% if request.user.is_authenticated %}
@@ -608,6 +620,23 @@
       }
     }
   </script>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
