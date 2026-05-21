@@ -188,15 +188,27 @@ async function finalizarCompra() {
     .find(c => c.trim().startsWith('csrftoken='))
     ?.split('=')[1] || '';
 
-  await fetch('/sincronizar-carrito/', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify({ carrito }),
-  });
+  try {
+    const res = await fetch('/sincronizar-carrito/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ carrito }),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      localStorage.setItem('carrito_pendiente', JSON.stringify(carrito));
+      window.location.href = '/login/';
+      return;
+    }
+
+  } catch (e) {
+    mostrarToast('Error de conexión. Intentá de nuevo.', 'var(--rojo)');
+    return;
+  }
 
   window.location.href = '/checkout/';
 }

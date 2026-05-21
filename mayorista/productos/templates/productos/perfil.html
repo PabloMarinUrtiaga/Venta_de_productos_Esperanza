@@ -257,10 +257,15 @@ body { min-height: 100%; display: flex; flex-direction: column; }
         📱 <span>{{ perfil.telefono }}</span>
       </div>
       <div class="perfil-info-item">
-        📦 <span>{{ pedidos.count }} pedido{{ pedidos.count|pluralize }}</span>
+        📦 <span>{{ total_pedidos }} pedido{{ total_pedidos|pluralize }}</span>
       </div>
 
-      <a href="/logout/" class="btn-logout">Cerrar sesión</a>
+      <form method="POST" action="/logout/" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" style="background:transparent; border:2px solid var(--rojo); color:var(--rojo); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.95rem; border-radius:50px; padding:0.65rem 1.5rem; cursor:pointer; width:100%; transition:background 0.2s;">
+          Cerrar sesión
+        </button>
+      </form>
     </div>
 
     <!-- Panel derecho -->

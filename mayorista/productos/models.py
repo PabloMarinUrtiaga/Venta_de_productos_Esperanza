@@ -94,7 +94,7 @@ class PedidoItem(models.Model):
 # ── Perfil ────────────────────────────────────
 class Perfil(models.Model):
     user           = models.OneToOneField(User, on_delete=models.CASCADE)
-    numero_cliente = models.IntegerField()
+    numero_cliente = models.IntegerField(unique=True)
     telefono       = models.CharField(max_length=20, blank=True)
 
     def __str__(self):

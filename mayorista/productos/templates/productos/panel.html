@@ -524,7 +524,21 @@
           </p>
         {% endfor %}
 
+        {% if productos.has_other_pages %}
+          <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+            {% if productos.has_previous %}
+              <a href="?filtro={{ request.GET.filtro }}&q={{ request.GET.q }}&pagina={{ productos.previous_page_number }}" class="btn-sm btn-primary-sm">← Anterior</a>
+            {% endif %}
+            <span style="font-weight:700; color:var(--gris); padding:0.4rem 0.8rem;">
+              Página {{ productos.number }} de {{ productos.paginator.num_pages }}
+            </span>
+            {% if productos.has_next %}
+              <a href="?filtro={{ request.GET.filtro }}&q={{ request.GET.q }}&pagina={{ productos.next_page_number }}" class="btn-sm btn-primary-sm">Siguiente →</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
+      
     </div>
 
     <!-- ── CLIENTES ── -->
@@ -538,15 +552,15 @@
         {% for c in clientes %}
           <div class="cliente-row">
             <div>
-              <a href="/historial/{{ c.usuario.id }}/" style="text-decoration:none;">
-                <div class="cliente-nombre">{{ c.usuario.username }} → Ver historial</div>
+              <a href="/historial/{{ c.user__id }}/" style="text-decoration:none;">
+                <div class="cliente-nombre">{{ c.user__username }} → Ver historial</div>
               </a>
-              <div class="cliente-meta">{{ c.pedidos }} pedido{{ c.pedidos|pluralize }}</div>
+              <div class="cliente-meta">{{ c.cantidad_pedidos }} pedido{{ c.cantidad_pedidos|pluralize }}</div>
             </div>
-            <div class="cliente-total">${{ c.total }}</div>
+            <div class="cliente-total">${{ c.total_gastado|default:"0" }}</div>
           </div>
         {% empty %}
-          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
+                  <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
         {% endfor %}
       </div>
     </div>
@@ -580,10 +594,11 @@
             <form method="POST" action="/cambiar-estado/{{ pedido.id }}/">
               {% csrf_token %}
               <select name="estado" class="select-estado" onchange="this.form.submit()">
-                <option value="pendiente"      {% if pedido.estado == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option>
+                <option value="pendiente_pago"  {% if pedido.estado == 'pendiente_pago' %}selected{% endif %}>⏳ Pendiente de pago</option>
                 <option value="en_preparacion" {% if pedido.estado == 'en_preparacion' %}selected{% endif %}>🔧 En preparación</option>
                 <option value="enviado"        {% if pedido.estado == 'enviado' %}selected{% endif %}>🚚 Enviado</option>
                 <option value="entregado"      {% if pedido.estado == 'entregado' %}selected{% endif %}>✅ Entregado</option>
+                <option value="cancelado"      {% if pedido.estado == 'cancelado' %}selected{% endif %}>❌ Cancelado</option>
               </select>
             </form>
 
