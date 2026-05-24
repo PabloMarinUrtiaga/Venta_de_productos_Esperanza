@@ -136,6 +136,20 @@
     .badge-bajo     { color: var(--naranja); font-weight: 800; }
 
     .prod-panel-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    
+    @media (max-width: 650px) {
+      .producto-panel-card {
+        grid-template-columns: 1fr;
+      }
+      .prod-panel-actions {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .form-precio input {
+        width: 90px;
+      }
+    }
 
     .form-precio { display: flex; gap: 0.4rem; align-items: center; }
     .form-precio input {
@@ -202,22 +216,17 @@
     }
     .pedido-panel-row:last-child { border-bottom: none; }
 
-    .pedido-panel-id {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.2rem;
-      color: var(--oscuro);
-      letter-spacing: 0.5px;
-      min-width: 80px;
-    }
-
-    .pedido-panel-info { font-size: 0.82rem; font-weight: 600; color: var(--gris); }
-    .pedido-panel-info strong { color: var(--oscuro); }
-
-    .pedido-panel-total {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem;
-      color: var(--rojo);
-      white-space: nowrap;
+    @media (max-width: 650px) {
+      .pedido-panel-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.5rem;
+        padding: 1rem 0;
+      }
+      .pedido-panel-id   { grid-column: 1 / -1; font-size: 1.1rem; }
+      .pedido-panel-info { grid-column: 1 / -1; }
+      .pedido-panel-total { font-size: 1.2rem; }
+      .panel-wrap { padding: 0 1rem; }
     }
 
     /* BADGE ESTADO */
@@ -278,7 +287,10 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
       {% if request.user.is_authenticated %}
@@ -324,29 +336,137 @@
 
         {% for producto in productos %}
           <div class="producto-panel-card">
+
+            <!-- INFO PRODUCTO -->
             <div>
-              <div class="prod-panel-nombre">{{ producto.nombre }}</div>
-              <div class="prod-panel-precio">${{ producto.precio }}</div>
+
+              <div class="prod-panel-nombre">
+                {{ producto.nombre }}
+              </div>
+
+              <!-- PRECIO -->
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+
+                <div class="prod-panel-precio">
+
+                  {% if producto.oferta_activa and producto.precio_oferta %}
+
+                    <span style="
+                      text-decoration:line-through;
+                      color:#888;
+                      font-size:1rem;
+                      margin-right:0.5rem;
+                    ">
+                      ${{ producto.precio }}
+                    </span>
+
+                    <span style="color:#E53935;">
+                      ${{ producto.precio_oferta }}
+                    </span>
+
+                  {% else %}
+
+                    ${{ producto.precio }}
+
+                  {% endif %}
+
+                </div>
+
+                <!-- CHECK OFERTA -->
+                <form method="POST"
+                      action="{% url 'editar_oferta' producto.id %}"
+                      style="display:flex; align-items:center; gap:0.4rem;">
+
+                  {% csrf_token %}
+
+                  <input type="hidden"
+                        name="precio_oferta"
+                        value="{{ producto.precio_oferta|default:'' }}">
+
+                  <input type="checkbox"
+                        name="oferta_activa"
+                        onchange="this.form.submit()"
+
+                        {% if producto.oferta_activa %}
+                          checked
+                        {% endif %}>
+
+                  <span style="
+                    font-size:0.85rem;
+                    font-weight:700;
+                    color:#555;
+                  ">
+                    Oferta
+                  </span>
+
+                </form>
+
+              </div>
+
+              <!-- STOCK -->
               <div class="prod-panel-stock" id="stock-{{ producto.id }}">
                 Stock: {{ producto.stock }}
+
                 {% if producto.stock <= 0 %}
                   <span class="badge-sinstock">🚨 SIN STOCK</span>
+
                 {% elif producto.stock <= 5 %}
                   <span class="badge-critico">🚨 Crítico</span>
+
                 {% elif producto.stock <= 20 %}
                   <span class="badge-bajo">⚠️ Bajo</span>
                 {% endif %}
               </div>
+
             </div>
+
+            <!-- ACCIONES -->
             <div class="prod-panel-actions">
-              <form method="POST" action="{% url 'editar_precio' producto.id %}" class="form-precio">
+
+              <!-- EDITAR PRECIO -->
+              <form method="POST"
+                    action="{% url 'editar_precio' producto.id %}"
+                    class="form-precio">
+
                 {% csrf_token %}
-                <input type="number" name="precio" placeholder="Nuevo precio" step="0.01"/>
-                <button type="submit" class="btn-sm btn-success-sm">Actualizar</button>
+
+                <input type="number"
+                      name="precio"
+                      placeholder="Nuevo precio"
+                      step="0.01">
+
+                <button type="submit" class="btn-sm btn-success-sm">
+                  Actualizar
+                </button>
+
               </form>
+
+              <!-- EDITAR OFERTA -->
+              <form method="POST"
+                    action="{% url 'editar_oferta' producto.id %}"
+                    class="form-precio">
+
+                {% csrf_token %}
+
+                <input type="number"
+                      name="precio_oferta"
+                      placeholder="Precio oferta"
+                      step="0.01"
+                      value="{{ producto.precio_oferta|default:'' }}">
+
+                <input type="hidden"
+                      name="oferta_activa"
+                      value="{% if producto.oferta_activa %}on{% endif %}">
+
+                <button type="submit" class="btn-sm btn-warning-sm">
+                  🔥 Actualizar oferta
+                </button>
+
+              </form>
+
+              <!-- BOTONES STOCK -->
               <div class="stock-actions">
 
-                <!-- Botones rápidos -->
                 <button onclick='cambiarStock({{ producto.id }}, "sumar")'
                         class="btn-sm btn-stock-sm"
                         title="Sumar stock">
@@ -363,12 +483,12 @@
 
               </div>
 
-              <!-- MODIFICAR STOCK MANUAL -->
+              <!-- EDITAR STOCK -->
               <form method="POST"
                     action="{% url 'editar_stock' producto.id %}"
                     class="form-precio"
                     style="margin-top:0.5rem;">
-                    
+
                 {% csrf_token %}
 
                 <input type="number"
@@ -379,6 +499,7 @@
                 <button type="submit" class="btn-sm btn-primary-sm">
                   📦 Stock
                 </button>
+
               </form>
 
               <!-- ELIMINAR -->
@@ -393,13 +514,31 @@
                 </button>
 
               </form>
+
             </div>
+
           </div>
         {% empty %}
-          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron productos.</p>
+          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">
+            No se encontraron productos.
+          </p>
         {% endfor %}
 
+        {% if productos.has_other_pages %}
+          <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+            {% if productos.has_previous %}
+              <a href="?filtro={{ request.GET.filtro }}&q={{ request.GET.q }}&pagina={{ productos.previous_page_number }}" class="btn-sm btn-primary-sm">← Anterior</a>
+            {% endif %}
+            <span style="font-weight:700; color:var(--gris); padding:0.4rem 0.8rem;">
+              Página {{ productos.number }} de {{ productos.paginator.num_pages }}
+            </span>
+            {% if productos.has_next %}
+              <a href="?filtro={{ request.GET.filtro }}&q={{ request.GET.q }}&pagina={{ productos.next_page_number }}" class="btn-sm btn-primary-sm">Siguiente →</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
+      
     </div>
 
     <!-- ── CLIENTES ── -->
@@ -413,15 +552,15 @@
         {% for c in clientes %}
           <div class="cliente-row">
             <div>
-              <a href="/historial/{{ c.usuario.id }}/" style="text-decoration:none;">
-                <div class="cliente-nombre">{{ c.usuario.username }} → Ver historial</div>
+              <a href="/historial/{{ c.user__id }}/" style="text-decoration:none;">
+                <div class="cliente-nombre">{{ c.user__username }} → Ver historial</div>
               </a>
-              <div class="cliente-meta">{{ c.pedidos }} pedido{{ c.pedidos|pluralize }}</div>
+              <div class="cliente-meta">{{ c.cantidad_pedidos }} pedido{{ c.cantidad_pedidos|pluralize }}</div>
             </div>
-            <div class="cliente-total">${{ c.total }}</div>
+            <div class="cliente-total">${{ c.total_gastado|default:"0" }}</div>
           </div>
         {% empty %}
-          <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
+                  <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
         {% endfor %}
       </div>
     </div>
@@ -455,10 +594,11 @@
             <form method="POST" action="/cambiar-estado/{{ pedido.id }}/">
               {% csrf_token %}
               <select name="estado" class="select-estado" onchange="this.form.submit()">
-                <option value="pendiente"      {% if pedido.estado == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option>
+                <option value="pendiente_pago"  {% if pedido.estado == 'pendiente_pago' %}selected{% endif %}>⏳ Pendiente de pago</option>
                 <option value="en_preparacion" {% if pedido.estado == 'en_preparacion' %}selected{% endif %}>🔧 En preparación</option>
                 <option value="enviado"        {% if pedido.estado == 'enviado' %}selected{% endif %}>🚚 Enviado</option>
                 <option value="entregado"      {% if pedido.estado == 'entregado' %}selected{% endif %}>✅ Entregado</option>
+                <option value="cancelado"      {% if pedido.estado == 'cancelado' %}selected{% endif %}>❌ Cancelado</option>
               </select>
             </form>
 
@@ -495,6 +635,23 @@
       }
     }
   </script>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>

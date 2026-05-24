@@ -12,7 +12,10 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="index.html">ESPERANZA</a>
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       <li><a href="/">Inicio</a></li>
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
@@ -98,5 +101,22 @@
   <script src="{% static 'productos/js/productos.js' %}?v=2"></script>
 
   
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
+
 </body>
 </html>

@@ -7,16 +7,16 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from .models import Producto, Pedido, PedidoItem, Perfil
-import mercadopago, json
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, models
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from decimal import Decimal, InvalidOperation
 from django_ratelimit.decorators import ratelimit
-import re
+import re, mercadopago, json, hmac, hashlib
+from django.core.paginator import Paginator
 
 sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
 
@@ -305,7 +305,7 @@ def checkout(request):
     for producto_id, cantidad in carrito.items():
 
         try:
-            producto = Producto.objects.get(id=producto_id)
+            producto = Producto.objects.get(id=producto_id , activo=True)
 
             cantidad = int(cantidad)
 
@@ -373,6 +373,15 @@ def checkout(request):
         except ValidationError:
             messages.error(request, 'Email inválido')
             return redirect('/checkout/')
+        
+        # NOTAS
+        if len(notas) > 500:
+            messages.error(request, 'Las notas no pueden superar los 500 caracteres')
+            return redirect('/checkout/')
+
+        if len(notas_envio) > 500:
+            messages.error(request, 'Las notas de envío no pueden superar los 500 caracteres')
+            return redirect('/checkout/')
 
         # TELÉFONO
         telefono_limpio = telefono.replace(' ', '').replace('-', '')
@@ -383,6 +392,10 @@ def checkout(request):
 
         if len(telefono_limpio) < 6:
             messages.error(request, 'Teléfono demasiado corto')
+            return redirect('/checkout/')
+        
+        if len(telefono_limpio) > 16:
+            messages.error(request, 'Teléfono demasiado largo')
             return redirect('/checkout/')
 
         # ─────────────────────────────
@@ -433,7 +446,7 @@ def checkout(request):
             for producto_id, cantidad in carrito.items():
 
                 try:
-                    producto = Producto.objects.select_for_update().get(id=producto_id)
+                    producto = Producto.objects.select_for_update().get(id=producto_id , activo=True)
 
                     cantidad = int(cantidad)
 
@@ -534,23 +547,27 @@ def checkout(request):
                 'external_reference': str(pedido.id),
 
                 'back_urls': {
-                    'success': f'http://127.0.0.1:8000/compra-exitosa/{pedido.id}/',
-                    'failure': 'http://127.0.0.1:8000/carrito/',
-                    'pending': 'http://127.0.0.1:8000/carrito/',
+                    'success': f'{settings.SITE_URL}/compra-exitosa/{pedido.id}/',
+                    'failure': f'{settings.SITE_URL}/carrito/',
+                    'pending': f'{settings.SITE_URL}/carrito/',
                 },
 
                 'auto_return': 'approved',
 
-                'notification_url': 'https://TU-URL/webhook/mercadopago/',
-            }
+                'notification_url': f'{settings.SITE_URL}/webhook/mercadopago/',
+                }
 
             preference_response = sdk.preference().create(preference_data)
 
-            if preference_response.get('status') != 201:
+            status = preference_response.get('status')
+
+            if status not in [200, 201]:
+
                 messages.error(request, 'Error al conectar con MercadoPago')
                 return redirect('/carrito/')
 
             preference = preference_response['response']
+            
 
             pedido.mp_preference_id = preference.get('id', '')
             pedido.save()
@@ -581,6 +598,10 @@ def compra_exitosa(request, pedido_id):
     except Pedido.DoesNotExist:
         return redirect('/')
 
+    if pedido.pago == 'mercadopago' and not pedido.pagado:
+        messages.error(request, 'El pago con MercadoPago no fue completado')
+        return redirect('/carrito/')
+
     return render(request, 'productos/checkout.html', {
         'pedido': pedido,
         'total': pedido.total
@@ -594,6 +615,8 @@ EMAILS_TEMPORALES = [
     'mailinator.com',
     'yopmail.com',
 ]
+
+@ratelimit(key='ip', rate='3/m', block=True)
 def registro(request):
 
     if request.method == 'POST':
@@ -738,9 +761,13 @@ def registro(request):
             last_name=last_name,
         )
 
+        ultimo_numero = Perfil.objects.aggregate(
+            maximo=models.Max('numero_cliente')
+        )['maximo'] or 0
+
         Perfil.objects.create(
             user=user,
-            numero_cliente=user.id,
+            numero_cliente=ultimo_numero + 1,
             telefono=telefono,
         )
 
@@ -810,9 +837,11 @@ def perfil(request):
     except Perfil.DoesNotExist:
         perfil_obj = None
     pedidos = Pedido.objects.filter(user=request.user).order_by('-fecha')[:3]
+    total_pedidos = Pedido.objects.filter(user=request.user).count()
     return render(request, 'productos/perfil.html', {
         'perfil': perfil_obj,
         'pedidos': pedidos,
+        'total_pedidos': total_pedidos,
     })
 
 
@@ -859,7 +888,10 @@ def historial(request, user_id=None):
     })
 
 # ── Logout ────────────────────────────────────
+@login_required
 def logout_view(request):
+    if request.method != 'POST':
+        return redirect('/productos/')
     logout(request)
     request.session['recien_logout'] = True
     return redirect('/login/')
@@ -905,7 +937,7 @@ def detalle_pedido(request, pedido_id):
 def panel(request):
     # 🔒 Solo admin puede acceder
     if not request.user.is_staff:
-        return redirect('/')
+        return render(request, 'productos/403.html', status=403)
 
     # ─────────────────────────────────────
     # 📦 PRODUCTOS
@@ -931,6 +963,9 @@ def panel(request):
         productos = productos.filter(stock__lte=0)
 
     productos = productos.order_by('nombre')
+    paginator = Paginator(productos, 20)
+    pagina = request.GET.get('pagina', 1)
+    productos = paginator.get_page(pagina)
 
     # ─────────────────────────────────────
     # 📦 PEDIDOS
@@ -952,34 +987,33 @@ def panel(request):
     # ─────────────────────────────────────
     # 👥 CLIENTES (con métricas)
     # ─────────────────────────────────────
-    clientes = Perfil.objects.select_related('user')
+    
 
     # 🔎 Buscador de clientes
     busqueda_cliente = request.GET.get('cliente')
-    if busqueda_cliente:
-        clientes = clientes.filter(
-            user__username__icontains=busqueda_cliente
-        )
 
-    clientes_data = []
 
-    for perfil in clientes:
-        pedidos_cliente = Pedido.objects.filter(user=perfil.user)
-
-        # 💰 Total gastado
-        total_gastado = pedidos_cliente.aggregate(
-            total=Sum('total')
-        )['total'] or 0
-
-        # 📦 Cantidad de pedidos
-        cantidad_pedidos = pedidos_cliente.count()
-
-        clientes_data.append({
-            'usuario': perfil.user,
-            'perfil': perfil,
-            'total': total_gastado,
-            'pedidos': cantidad_pedidos
-        })
+    clientes_data = list(
+    Perfil.objects.select_related('user')
+    .annotate(
+        cantidad_pedidos=Count('user__pedido'),
+        total_gastado=Sum('user__pedido__total')
+    )
+    .filter(
+        user__username__icontains=busqueda_cliente if busqueda_cliente else ''
+    )
+    .values(
+        'user__id',
+        'user__username',
+        'user__email',
+        'user__first_name',
+        'user__last_name',
+        'numero_cliente',
+        'telefono',
+        'cantidad_pedidos',
+        'total_gastado',
+    )
+)
 
     # ─────────────────────────────────────
     # 📤 Render final
@@ -1215,7 +1249,7 @@ def cambiar_estado(request, pedido_id):
     if request.method == 'POST':
         pedido = get_object_or_404(Pedido, id=pedido_id)
         nuevo_estado = request.POST.get('estado')
-        estados_validos = ['pendiente', 'en_preparacion', 'enviado', 'entregado']
+        estados_validos = ['pendiente_pago', 'en_preparacion', 'enviado', 'entregado', 'cancelado']
         if nuevo_estado in estados_validos:
             pedido.estado = nuevo_estado
             pedido.save()
@@ -1356,34 +1390,178 @@ def editar_stock(request, producto_id):
 
     return redirect('/panel/')
 
+#OFERTAS:
+@login_required
+def editar_oferta(request, producto_id):
+
+    # 🔒 Solo admin
+    if not request.user.is_staff:
+        messages.error(request, 'No autorizado')
+        return redirect('/')
+
+    # 🔒 Solo POST
+    if request.method != 'POST':
+        messages.error(request, 'Método inválido')
+        return redirect('/panel/')
+
+    producto = get_object_or_404(
+        Producto,
+        id=producto_id
+    )
+
+    # ─────────────────────────────
+    # CHECKBOX
+    # ─────────────────────────────
+    oferta_activa = bool(
+        request.POST.get('oferta_activa')
+    )
+
+    # ─────────────────────────────
+    # INPUT
+    # ─────────────────────────────
+    precio_oferta_input = request.POST.get(
+        'precio_oferta',
+        ''
+    ).strip()
+
+    # ─────────────────────────────
+    # ACTUALIZAR PRECIO SI VINO
+    # ─────────────────────────────
+    if precio_oferta_input != '':
+
+        if len(precio_oferta_input) > 20:
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        try:
+
+            precio_oferta = Decimal(
+                precio_oferta_input
+            )
+
+        except InvalidOperation:
+
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        # 🔒 NaN / infinito
+        if not precio_oferta.is_finite():
+            messages.error(
+                request,
+                'Precio inválido'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Mayor a 0
+        if precio_oferta <= 0:
+            messages.error(
+                request,
+                'La oferta debe ser mayor a 0'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Máximo 2 decimales
+        if precio_oferta.as_tuple().exponent < -2:
+            messages.error(
+                request,
+                'Máximo 2 decimales'
+            )
+            return redirect('/panel/')
+
+        # 🔒 Menor al precio normal
+        if precio_oferta >= producto.precio:
+            messages.error(
+                request,
+                'La oferta debe ser menor al precio normal'
+            )
+            return redirect('/panel/')
+
+        producto.precio_oferta = precio_oferta
+
+    # ─────────────────────────────
+    # ACTIVAR / DESACTIVAR
+    # ─────────────────────────────
+    producto.oferta_activa = oferta_activa
+
+    # 🔒 No permitir activar sin precio
+    if (
+        producto.oferta_activa
+        and not producto.precio_oferta
+    ):
+        messages.error(
+            request,
+            'Primero cargá un precio de oferta'
+        )
+        return redirect('/panel/')
+
+    producto.save(update_fields=[
+        'precio_oferta',
+        'oferta_activa'
+    ])
+
+    messages.success(
+        request,
+        f'Oferta actualizada para {producto.nombre}'
+    )
+
+    return redirect('/panel/')
+
 # WEBHOOK
 @csrf_exempt
 def mp_webhook(request):
 
-    # ─────────────────────────────
-    # SOLO POST
-    # ─────────────────────────────
     if request.method != "POST":
         return HttpResponse(status=405)
+
+    # ─────────────────────────────
+    # VERIFICAR FIRMA DE MP
+    # ─────────────────────────────
+    webhook_secret = settings.MP_WEBHOOK_SECRET
+
+    if webhook_secret:
+        x_signature  = request.headers.get("x-signature", "")
+        x_request_id = request.headers.get("x-request-id", "")
+
+        ts   = ""
+        v1   = ""
+
+        for part in x_signature.split(","):
+            part = part.strip()
+            if part.startswith("ts="):
+                ts = part[3:]
+            elif part.startswith("v1="):
+                v1 = part[3:]
+
+        if not ts or not v1:
+            return HttpResponse(status=400)
+
+        data_id = request.GET.get("data.id", "")
+
+        manifest = f"id:{data_id};request-id:{x_request_id};ts:{ts};"
+
+        expected = hmac.new(
+            key =webhook_secret.encode("utf-8"),
+            msg =manifest.encode("utf-8"),
+            digestmod=hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(expected, v1):
+            return HttpResponse(status=401)
 
     # ─────────────────────────────
     # JSON SEGURO
     # ─────────────────────────────
     try:
-
         data = json.loads(request.body)
-
     except json.JSONDecodeError:
-
-        print("JSON inválido en webhook")
         return HttpResponse(status=400)
 
-    print("WEBHOOK RECIBIDO:")
-    print(data)
-
-    # ─────────────────────────────
-    # SOLO PAYMENTS
-    # ─────────────────────────────
     if data.get("type") != "payment":
         return HttpResponse(status=200)
 
@@ -1396,128 +1574,65 @@ def mp_webhook(request):
     # CONSULTAR A MP
     # ─────────────────────────────
     try:
-
         payment_info = sdk.payment().get(payment_id)
-
     except Exception as e:
-
-        print("Error consultando MP:", e)
         return HttpResponse(status=500)
 
     payment = payment_info.get("response", {})
 
-    print(payment)
-
-    # ─────────────────────────────
-    # VALIDAR STATUS
-    # ─────────────────────────────
     if payment.get("status") != "approved":
         return HttpResponse(status=200)
 
-    # ─────────────────────────────
-    # VALIDAR EXTERNAL REFERENCE
-    # ─────────────────────────────
     pedido_id = payment.get("external_reference")
 
     if not pedido_id:
-        print("Sin external_reference")
         return HttpResponse(status=200)
 
-    # ─────────────────────────────
-    # BUSCAR PEDIDO
-    # ─────────────────────────────
     try:
-
         pedido = Pedido.objects.get(id=pedido_id)
-
     except Pedido.DoesNotExist:
-
-        print("Pedido no encontrado")
         return HttpResponse(status=200)
 
-    # ─────────────────────────────
-    # EVITAR DOBLE PROCESAMIENTO
-    # ─────────────────────────────
     if pedido.pagado:
-
-        print(f"Pedido {pedido.id} ya estaba pagado")
         return HttpResponse(status=200)
 
-    # ─────────────────────────────
-    # VALIDAR MONTO
-    # ─────────────────────────────
     monto_mp = Decimal(str(payment.get("transaction_amount", 0)))
 
     if monto_mp != pedido.total:
-
-        print("Monto inválido")
-        print("MP:", monto_mp)
-        print("DB:", pedido.total)
-
         return HttpResponse(status=400)
 
-    # ─────────────────────────────
-    # VALIDAR PAYMENT ID
-    # ─────────────────────────────
     payment_id_str = str(payment_id)
 
     if Pedido.objects.filter(mp_payment_id=payment_id_str).exists():
-
-        print("Payment ID duplicado")
         return HttpResponse(status=200)
 
     # ─────────────────────────────
-    # TODO OK → PAGAR
+    # TODO OK → PAGAR (todo dentro del atomic)
     # ─────────────────────────────
     with transaction.atomic():
 
-        # 🔒 Lock pedido
         pedido = Pedido.objects.select_for_update().get(id=pedido.id)
 
-        # 🔒 Evitar doble procesamiento
         if pedido.pagado:
             return HttpResponse(status=200)
 
-        # ─────────────────────────────
-        # DESCONTAR STOCK
-        # ─────────────────────────────
-        items = PedidoItem.objects.select_related(
-            'producto'
-        ).filter(
-            pedido=pedido
-        )
+        items = PedidoItem.objects.select_related('producto').filter(pedido=pedido)
 
         for item in items:
+            producto = Producto.objects.select_for_update().get(id=item.producto.id)
 
-            producto = Producto.objects.select_for_update().get(
-                id=item.producto.id
-            )
-
-            # 🔒 Validar stock nuevamente
             if producto.stock < item.cantidad:
-
-                print("Stock insuficiente en webhook")
-
                 return HttpResponse(status=400)
 
             producto.stock -= item.cantidad
-
             producto.save(update_fields=['stock'])
 
-    # ─────────────────────────────
-    # MARCAR PAGADO
-    # ─────────────────────────────
-    pedido.pagado = True
-
-    pedido.estado = "en_preparacion"
-
-    pedido.mp_payment_id = payment_id_str
-
-    pedido.fecha_pago = timezone.now()
-
-    pedido.save()
-
-    print(f"Pedido {pedido.id} PAGADO")
+        # MARCAR PAGADO DENTRO DEL ATOMIC
+        pedido.pagado        = True
+        pedido.estado        = "en_preparacion"
+        pedido.mp_payment_id = payment_id_str
+        pedido.fecha_pago    = timezone.now()
+        pedido.save()
 
     return HttpResponse(status=200)
 

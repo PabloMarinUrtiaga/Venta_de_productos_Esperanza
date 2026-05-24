@@ -10,6 +10,9 @@ class Producto(models.Model):
     categoria   = models.CharField(max_length=50, blank=True)
     descripcion = models.TextField(blank=True)
     activo      = models.BooleanField(default=True)
+    
+    precio_oferta = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    oferta_activa = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nombre
@@ -91,7 +94,7 @@ class PedidoItem(models.Model):
 # ── Perfil ────────────────────────────────────
 class Perfil(models.Model):
     user           = models.OneToOneField(User, on_delete=models.CASCADE)
-    numero_cliente = models.IntegerField()
+    numero_cliente = models.IntegerField(unique=True)
     telefono       = models.CharField(max_length=20, blank=True)
 
     def __str__(self):

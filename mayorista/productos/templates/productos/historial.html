@@ -128,9 +128,16 @@
     }
     .btn-volver:hover { background: #333; }
 
-    @media (max-width: 600px) {
-      .pedido-historial-row { grid-template-columns: 1fr 1fr; }
-      .pedido-hist-id { font-size: 1.1rem; }
+     @media (max-width: 600px) {
+      .pedido-historial-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+      }
+      .pedido-hist-id   { grid-column: 1 / -1; font-size: 1.1rem; }
+      .pedido-hist-info { grid-column: 1 / -1; }
+      .pedido-hist-total { font-size: 1.2rem; }
+      .btn-ver { grid-column: 1 / -1; text-align: center; padding: 0.6rem; }
+      .historial-wrap { padding: 0 1rem; }
     }
   </style>
 </head>
@@ -139,7 +146,10 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
       {% if request.user.is_authenticated %}
@@ -198,6 +208,23 @@
   <footer>
     <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
   </footer>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>

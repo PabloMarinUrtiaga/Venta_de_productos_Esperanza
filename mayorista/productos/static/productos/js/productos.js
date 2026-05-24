@@ -36,7 +36,20 @@ function actualizarContadorNav() {
 
 function agregarAlCarrito(id, nombre) {
   const carrito = getCarrito();
-  carrito[id]   = (carrito[id] || 0) + 1;
+
+  const producto = todosLosProductos.find(p => p.id === id);
+  const stock = producto?.stock ?? Infinity;
+
+  const cantidadActual = carrito[id] || 0;
+
+  // 🚫 NO PERMITIR SUPERAR STOCK
+  if (cantidadActual >= stock) {
+    mostrarToast("🚫 No hay más stock disponible", "var(--rojo)");
+    return;
+  }
+
+  carrito[id] = cantidadActual + 1;
+
   setCarrito(carrito);
   mostrarToast(`✅ ${nombre} agregado al carrito`);
 }
@@ -48,14 +61,6 @@ function mostrarToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── Badge de stock ───────────────────────────
-function badgeStock(stock) {
-  if (stock <= 5)   return '<span class="badge-stock badge-urgente">🚨 Urgente</span>';
-  if (stock <= 20)  return '<span class="badge-stock badge-critico">🔴 Crítico</span>';
-  if (stock <= 100) return '<span class="badge-stock badge-bajo">⚠️ Stock bajo</span>';
-  return '<span class="badge-stock badge-ok">✅ Disponible</span>';
 }
 
 // ── Render ───────────────────────────────────
@@ -84,13 +89,11 @@ function renderProductos(lista) {
       <div class="producto-card">
         <div class="producto-card-img">
           ${emoji}
-          ${badgeStock(p.stock)}
         </div>
         <div class="producto-card-body">
           <div class="producto-nombre">${p.nombre}</div>
           <div class="producto-categoria">${p.categoria || 'General'}</div>
           <div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>
-          <div class="producto-stock">Stock: ${p.stock} unidades</div>
           <button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}')">
             🛒 Agregar al carrito
           </button>

@@ -235,22 +235,30 @@
       text-align: center;
       margin-top: 0.6rem;
     }
+
+    .opcion-grid-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    @media (max-width: 500px) {
+      .opcion-grid-3 {
+        grid-template-columns: 1fr;
+      }
+      .campo-row {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
-<script>
-  document.getElementById('form-checkout').addEventListener('submit', function() {
-    const btn = document.getElementById('btn-confirmar');
-    btn.innerHTML = '⏳ Procesando...';
-    btn.disabled = true;
-  });
-</script>
-
 <body>
 
 <nav class="navbar">
   <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+  <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+  </button>
 
-  <ul class="navbar-links">
+  <ul class="navbar-links" id="navbar-links">
     <li><a href="/productos/">Productos</a></li>
     <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
 
@@ -353,6 +361,11 @@
               <input type="text" name="direccion">
             </div>
 
+            <div class="campo">
+              <label>Piso / Depto <span style="color:var(--gris); font-weight:600;">(opcional)</span></label>
+              <input type="text" name="piso_depto" placeholder="Ej: 3° B" />
+            </div>
+
             <div class="campo-row">
 
               <div class="campo">
@@ -378,7 +391,7 @@
 
         <div class="checkout-section-body">
 
-          <div class="opcion-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="opcion-grid opcion-grid-3">
 
             <!-- TRANSFERENCIA -->
             <label class="opcion-card seleccionado" id="label-transferencia">
@@ -605,6 +618,31 @@ function togglePago(tipo) {
         );
 }
 
+</script>
+
+<script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
+
+<script>
+  document.getElementById('form-checkout').addEventListener('submit', function() {
+    const btn = document.getElementById('btn-confirmar');
+    btn.innerHTML = '⏳ Procesando...';
+    btn.disabled = true;
+  });
 </script>
 
 </body>

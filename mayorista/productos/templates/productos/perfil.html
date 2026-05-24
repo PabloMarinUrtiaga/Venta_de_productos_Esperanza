@@ -190,17 +190,31 @@ body { min-height: 100%; display: flex; flex-direction: column; }
     }
 
     .btn-admin {
-  background: var(--amarillo);
-  color: var(--oscuro);
-  font-family: 'Nunito', sans-serif;
-  font-weight: 800;
-  font-size: 0.85rem;
-  padding: 0.4rem 1rem;
-  border-radius: 50px;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.btn-admin:hover { background: var(--naranja); color: #fff; }
+      background: var(--amarillo);
+      color: var(--oscuro);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-admin:hover { background: var(--naranja); color: #fff; }
+
+    .perfil-datos-grid {
+      padding: 1.2rem 1.3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      .perfil-datos-grid { grid-template-columns: 1fr; }
+      .pedido-row { grid-template-columns: 1fr; }
+      .perfil-wrap { padding: 0 1rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -208,10 +222,10 @@ body { min-height: 100%; display: flex; flex-direction: column; }
   <!-- NAVBAR -->
   <nav class="navbar">
     <a class="navbar-logo" href="/productos/">ESPE<span>RANZA</span></a>
-    
-
-
-    <ul class="navbar-links">
+    <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="navbar-links" id="navbar-links">
       
       <!-- Panel interno-->>
   {% if request.user.is_staff %}
@@ -243,10 +257,15 @@ body { min-height: 100%; display: flex; flex-direction: column; }
         📱 <span>{{ perfil.telefono }}</span>
       </div>
       <div class="perfil-info-item">
-        📦 <span>{{ pedidos.count }} pedido{{ pedidos.count|pluralize }}</span>
+        📦 <span>{{ total_pedidos }} pedido{{ total_pedidos|pluralize }}</span>
       </div>
 
-      <a href="/logout/" class="btn-logout">Cerrar sesión</a>
+      <form method="POST" action="/logout/" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" style="background:transparent; border:2px solid var(--rojo); color:var(--rojo); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.95rem; border-radius:50px; padding:0.65rem 1.5rem; cursor:pointer; width:100%; transition:background 0.2s;">
+          Cerrar sesión
+        </button>
+      </form>
     </div>
 
     <!-- Panel derecho -->
@@ -255,7 +274,7 @@ body { min-height: 100%; display: flex; flex-direction: column; }
       <!-- Datos personales -->
       <div class="perfil-section">
         <div class="perfil-section-header">Mis datos</div>
-        <div style="padding:1.2rem 1.3rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="perfil-datos-grid">
           <div>
             <div style="font-size:0.72rem; font-weight:800; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Nombre</div>
             <div style="font-weight:700;">{{ request.user.first_name }} {{ request.user.last_name }}</div>
@@ -327,6 +346,23 @@ body { min-height: 100%; display: flex; flex-direction: column; }
   <footer>
     <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
   </footer>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('navbar-toggle');
+    var links  = document.getElementById('navbar-links');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('abierto');
+      links.classList.toggle('abierto');
+    });
+    links.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('abierto');
+        links.classList.remove('abierto');
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>

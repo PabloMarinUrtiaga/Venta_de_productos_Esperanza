@@ -65,10 +65,26 @@ function eliminarDelCarrito(id) {
 function cambiarCantidad(id, delta) {
   const carrito = getCarrito();
   const key     = String(id);
-  carrito[key]  = (carrito[key] || 1) + delta;
-  if (carrito[key] <= 0) {
+  const stock   = catalogoCache[id]?.stock || 0;
+
+  let nuevaCantidad = (carrito[key] || 1) + delta;
+
+  // 🚫 NO BAJAR DE 1
+  if (nuevaCantidad <= 0) {
     delete carrito[key];
+    setCarrito(carrito);
+    renderCarrito();
+    return;
   }
+
+  // 🚫 NO SUPERAR STOCK
+  if (nuevaCantidad > stock) {
+    mostrarToast("🚫 Stock máximo alcanzado", "var(--rojo)");
+    return;
+  }
+
+  carrito[key] = nuevaCantidad;
+
   setCarrito(carrito);
   renderCarrito();
 }
@@ -172,15 +188,27 @@ async function finalizarCompra() {
     .find(c => c.trim().startsWith('csrftoken='))
     ?.split('=')[1] || '';
 
-  await fetch('/sincronizar-carrito/', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify({ carrito }),
-  });
+  try {
+    const res = await fetch('/sincronizar-carrito/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ carrito }),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      localStorage.setItem('carrito_pendiente', JSON.stringify(carrito));
+      window.location.href = '/login/';
+      return;
+    }
+
+  } catch (e) {
+    mostrarToast('Error de conexión. Intentá de nuevo.', 'var(--rojo)');
+    return;
+  }
 
   window.location.href = '/checkout/';
 }
