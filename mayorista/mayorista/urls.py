@@ -9,6 +9,7 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              cambiar_estado, cambiar_stock_ajax, stock_actual,
                              mp_webhook, editar_stock, editar_oferta)
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('cambiar-estado/<int:pedido_id>/', cambiar_estado),
@@ -17,7 +18,7 @@ urlpatterns = [
     path('historial/<int:user_id>/', historial),
     path('sincronizar-carrito/', sincronizar_carrito),
     path('admin/', admin.site.urls),
-    path('', lista_productos),
+    path('', RedirectView.as_view(url='/productos/')),
     path('productos/', lista_productos),
     path('agregar/<int:producto_id>/', agregar_al_carrito),
     path('carrito/', ver_carrito),
