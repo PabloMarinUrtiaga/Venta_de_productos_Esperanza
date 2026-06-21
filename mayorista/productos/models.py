@@ -3,14 +3,25 @@ from django.contrib.auth.models import User
 
 
 # ── Producto ──────────────────────────────────
+CATEGORIA_CHOICES = [
+    ('Lácteos',     'Lácteos'),
+    ('Enlatados',   'Enlatados'),
+    ('Cereales',    'Cereales'),
+    ('Snacks',      'Snacks'),
+    ('Condimentos', 'Condimentos'),
+]
+
+
 class Producto(models.Model):
     nombre      = models.CharField(max_length=100)
     precio      = models.DecimalField(max_digits=10, decimal_places=2)
     stock       = models.IntegerField()
-    categoria   = models.CharField(max_length=50, blank=True)
+    categoria   = models.CharField(max_length=50, choices=CATEGORIA_CHOICES, blank=True)
     descripcion = models.TextField(blank=True)
     activo      = models.BooleanField(default=True)
-    
+
+    imagen_base64 = models.TextField(blank=True, null=True)
+
     precio_oferta = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     oferta_activa = models.BooleanField(default=False)
 

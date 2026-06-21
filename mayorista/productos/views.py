@@ -15,10 +15,41 @@ from django.utils import timezone
 from django.db.models import Q, Sum, Count
 from decimal import Decimal, InvalidOperation
 from django_ratelimit.decorators import ratelimit
-import re, mercadopago, json, hmac, hashlib
+import re, mercadopago, json, hmac, hashlib, base64, io
 from django.core.paginator import Paginator
+from PIL import Image
+
 
 sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
+
+def comprimir_imagen(archivo):
+    """
+    Recibe un archivo de imagen subido, lo redimensiona a 600px de ancho máx,
+    lo comprime a JPEG calidad 80 y devuelve el string en base64.
+    """
+    try:
+        img = Image.open(archivo)
+
+        # Convertir a RGB (por si es PNG con transparencia)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Redimensionar manteniendo proporción
+        ancho_max = 600
+        if img.width > ancho_max:
+            ratio = ancho_max / img.width
+            nuevo_alto = int(img.height * ratio)
+            img = img.resize((ancho_max, nuevo_alto), Image.LANCZOS)
+
+        # Comprimir a JPEG calidad 80
+        buffer = io.BytesIO()
+        img.save(buffer, format='JPEG', quality=80, optimize=True)
+        buffer.seek(0)
+
+        return base64.b64encode(buffer.read()).decode('utf-8')
+
+    except Exception:
+        return None
 
 # ── Home ─────────────────────────────────────
 def home(request):
@@ -29,7 +60,19 @@ def home(request):
 def lista_productos(request):
     if request.headers.get('Accept') == 'application/json':
         productos = Producto.objects.filter(activo=True, stock__gt=0)
-        data = list(productos.values('id', 'nombre', 'precio', 'stock', 'categoria', 'descripcion'))
+
+        data = []
+        for p in productos:
+            data.append({
+                'id': p.id,
+                'nombre': p.nombre,
+                'precio': p.precio,
+                'stock': p.stock,
+                'categoria': p.categoria,
+                'descripcion': p.descripcion,
+                'imagen': f'data:image/jpeg;base64,{p.imagen_base64}' if p.imagen_base64 else None,
+            })
+
         return JsonResponse(data, safe=False)
     
     recien_logueado = request.session.pop('recien_logueado', False)
@@ -1135,6 +1178,44 @@ def agregar_producto(request):
         return redirect('/panel/')
 
     # ─────────────────────────────
+    # CATEGORÍA
+    # ─────────────────────────────
+
+    categoria = request.POST.get('categoria', '').strip()
+
+    categorias_validas = ['Lácteos', 'Enlatados', 'Cereales', 'Snacks', 'Condimentos']
+
+    if categoria and categoria not in categorias_validas:
+        messages.error(request, 'Categoría inválida')
+        return redirect('/panel/')
+
+    # ─────────────────────────────
+    # IMAGEN
+    # ─────────────────────────────
+
+    imagen_archivo = request.FILES.get('imagen')
+    imagen_base64 = None
+
+    if imagen_archivo:
+
+        # 🔒 Límite de tamaño del archivo subido (5MB antes de comprimir)
+        if imagen_archivo.size > 5 * 1024 * 1024:
+            messages.error(request, 'La imagen no puede superar los 5MB')
+            return redirect('/panel/')
+
+        # 🔒 Tipos permitidos
+        tipos_validos = ['image/jpeg', 'image/png', 'image/webp']
+        if imagen_archivo.content_type not in tipos_validos:
+            messages.error(request, 'Formato de imagen no permitido (solo JPG, PNG o WEBP)')
+            return redirect('/panel/')
+
+        imagen_base64 = comprimir_imagen(imagen_archivo)
+
+        if imagen_base64 is None:
+            messages.error(request, 'No se pudo procesar la imagen')
+            return redirect('/panel/')
+
+    # ─────────────────────────────
     # CREAR PRODUCTO
     # ─────────────────────────────
 
@@ -1142,6 +1223,8 @@ def agregar_producto(request):
         nombre=nombre,
         precio=precio,
         stock=stock,
+        categoria=categoria,
+        imagen_base64=imagen_base64,
         activo=True
     )
 
@@ -1392,7 +1475,8 @@ def editar_stock(request, producto_id):
 
 #OFERTAS:
 @login_required
-def editar_oferta(request, producto_id):
+def editar_oferta(request, producto_id): 
+
 
     # 🔒 Solo admin
     if not request.user.is_staff:
@@ -1510,6 +1594,80 @@ def editar_oferta(request, producto_id):
         f'Oferta actualizada para {producto.nombre}'
     )
 
+    return redirect('/panel/')
+
+#CATALOGO
+@login_required
+def editar_categoria(request, producto_id):
+
+    if not request.user.is_staff:
+        messages.error(request, 'No autorizado')
+        return redirect('/')
+
+    if request.method != 'POST':
+        return redirect('/panel/')
+
+    try:
+        producto = Producto.objects.get(id=producto_id)
+    except Producto.DoesNotExist:
+        messages.error(request, 'Producto no encontrado')
+        return redirect('/panel/')
+
+    categoria = request.POST.get('categoria', '').strip()
+    categorias_validas = ['Lácteos', 'Enlatados', 'Cereales', 'Snacks', 'Condimentos']
+
+    if categoria not in categorias_validas:
+        messages.error(request, 'Categoría inválida')
+        return redirect('/panel/')
+
+    producto.categoria = categoria
+    producto.save(update_fields=['categoria'])
+
+    messages.success(request, 'Categoría actualizada')
+    return redirect('/panel/')
+
+#Cambiar imagen
+@login_required
+def editar_imagen(request, producto_id):
+
+    if not request.user.is_staff:
+        messages.error(request, 'No autorizado')
+        return redirect('/')
+
+    if request.method != 'POST':
+        return redirect('/panel/')
+
+    try:
+        producto = Producto.objects.get(id=producto_id)
+    except Producto.DoesNotExist:
+        messages.error(request, 'Producto no encontrado')
+        return redirect('/panel/')
+
+    imagen_archivo = request.FILES.get('imagen')
+
+    if not imagen_archivo:
+        messages.error(request, 'Seleccioná una imagen')
+        return redirect('/panel/')
+
+    if imagen_archivo.size > 5 * 1024 * 1024:
+        messages.error(request, 'La imagen no puede superar los 5MB')
+        return redirect('/panel/')
+
+    tipos_validos = ['image/jpeg', 'image/png', 'image/webp']
+    if imagen_archivo.content_type not in tipos_validos:
+        messages.error(request, 'Formato de imagen no permitido (solo JPG, PNG o WEBP)')
+        return redirect('/panel/')
+
+    imagen_base64 = comprimir_imagen(imagen_archivo)
+
+    if imagen_base64 is None:
+        messages.error(request, 'No se pudo procesar la imagen')
+        return redirect('/panel/')
+
+    producto.imagen_base64 = imagen_base64
+    producto.save(update_fields=['imagen_base64'])
+
+    messages.success(request, 'Imagen actualizada')
     return redirect('/panel/')
 
 # WEBHOOK
@@ -1635,6 +1793,8 @@ def mp_webhook(request):
         pedido.save()
 
     return HttpResponse(status=200)
+
+
 
 #Errores
 def error_404(request, exception=None):

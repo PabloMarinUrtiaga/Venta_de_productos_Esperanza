@@ -309,11 +309,23 @@
     <div class="panel-section">
       <div class="panel-section-header">➕ Agregar producto</div>
       <div class="panel-section-body">
-        <form method="POST" action="{% url 'agregar_producto' %}" class="form-inline">
+        <form method="POST" action="{% url 'agregar_producto' %}" class="form-inline" enctype="multipart/form-data">
           {% csrf_token %}
           <input type="text"   name="nombre" placeholder="Nombre del producto" required/>
           <input type="number" name="precio" placeholder="Precio" step="0.01" required/>
           <input type="number" name="stock"  placeholder="Stock inicial" required/>
+
+          <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
+            <option value="">Categoría...</option>
+            <option value="Lácteos">Lácteos</option>
+            <option value="Enlatados">Enlatados</option>
+            <option value="Cereales">Cereales</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Condimentos">Condimentos</option>
+          </select>
+
+          <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="flex:1; min-width:140px; font-size:0.85rem;"/>
+
           <button type="submit" class="btn-sm btn-primary-sm">Agregar producto</button>
         </form>
       </div>
@@ -342,8 +354,19 @@
             <!-- INFO PRODUCTO -->
             <div>
 
-              <div class="prod-panel-nombre">
-                {{ producto.nombre }}
+              <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.3rem;">
+
+                {% if producto.imagen_base64 %}
+                  <img src="data:image/jpeg;base64,{{ producto.imagen_base64 }}" alt="{{ producto.nombre }}" style="width:50px; height:50px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+                {% else %}
+                  <div style="width:50px; height:50px; border-radius:8px; background:#eee; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📦</div>
+                {% endif %}
+
+                <div class="prod-panel-nombre" style="margin-bottom:0;">
+                  {{ producto.nombre }}
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--gris);">{{ producto.categoria|default:"Sin categoría" }}</div>
+                </div>
+
               </div>
 
               <!-- PRECIO -->
@@ -464,6 +487,25 @@
                   🔥 Actualizar oferta
                 </button>
 
+              </form>
+              <!-- EDITAR CATEGORÍA -->
+              <form method="POST" action="{% url 'editar_categoria' producto.id %}" class="form-precio">
+                {% csrf_token %}
+                <select name="categoria" onchange="this.form.submit()" style="padding:0.45rem 0.7rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:600; background:var(--blanco); color:var(--oscuro); width:120px;">
+                  <option value="">Categoría...</option>
+                  <option value="Lácteos"     {% if producto.categoria == 'Lácteos' %}selected{% endif %}>Lácteos</option>
+                  <option value="Enlatados"   {% if producto.categoria == 'Enlatados' %}selected{% endif %}>Enlatados</option>
+                  <option value="Cereales"    {% if producto.categoria == 'Cereales' %}selected{% endif %}>Cereales</option>
+                  <option value="Snacks"      {% if producto.categoria == 'Snacks' %}selected{% endif %}>Snacks</option>
+                  <option value="Condimentos" {% if producto.categoria == 'Condimentos' %}selected{% endif %}>Condimentos</option>
+                </select>
+              </form>
+
+              <!-- EDITAR IMAGEN -->
+              <form method="POST" action="{% url 'editar_imagen' producto.id %}" class="form-precio" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="width:120px; font-size:0.75rem;">
+                <button type="submit" class="btn-sm btn-success-sm">📷</button>
               </form>
 
               <!-- BOTONES STOCK -->
