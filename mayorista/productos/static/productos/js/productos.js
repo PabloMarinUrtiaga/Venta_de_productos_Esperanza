@@ -84,22 +84,27 @@ function renderProductos(lista) {
   }
 
   grid.innerHTML = lista.map(p => {
-    const emoji = EMOJIS_CATEGORIA[p.categoria] || EMOJIS_CATEGORIA['default'];
-    return `
-      <div class="producto-card">
-        <div class="producto-card-img">
-          ${emoji}
-        </div>
-        <div class="producto-card-body">
-          <div class="producto-nombre">${p.nombre}</div>
-          <div class="producto-categoria">${p.categoria || 'General'}</div>
-          <div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>
-          <button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}')">
-            🛒 Agregar al carrito
-          </button>
-        </div>
-      </div>`;
-  }).join('');
+      const emoji = EMOJIS_CATEGORIA[p.categoria] || EMOJIS_CATEGORIA['default'];
+
+      const imagenHtml = p.imagen
+        ? `<img src="${p.imagen}" alt="${p.nombre}" style="width:100%; height:100%; object-fit:cover;">`
+        : emoji;
+
+      return `
+        <div class="producto-card">
+          <div class="producto-card-img">
+            ${imagenHtml}
+          </div>
+          <div class="producto-card-body">
+            <div class="producto-nombre">${p.nombre}</div>
+            <div class="producto-categoria">${p.categoria || 'General'}</div>
+            <div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>
+            <button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}')">
+              🛒 Agregar al carrito
+            </button>
+          </div>
+        </div>`;
+    }).join('');
 }
 
 function filtrarYRender() {

@@ -15,12 +15,14 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <a class="navbar-logo" href="/productos/">ESPERANZA</a>
+    <a class="navbar-logo" href="/productos/">
+      <img src="{% static 'productos/img/logo_esperanza.png' %}" alt="Esperanza" style="height:48px; width:auto; vertical-align:middle; margin-right:0.4rem;">ESPE<span>RANZA</span>
+    </a>
     <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
       <span></span><span></span><span></span>
     </button>
     <ul class="navbar-links" id="navbar-links">
-      <li><a href="/">Inicio</a></li>
+     
       <li><a href="/productos/">Productos</a></li>
       <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
       {% if request.user.is_authenticated %}
