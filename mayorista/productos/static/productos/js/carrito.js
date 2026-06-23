@@ -51,6 +51,24 @@ async function obtenerCatalogo() {
   }
 }
 
+// ── Cálculo precio mayorista (Opción B) ──────
+function calcularSubtotal(prod, cantidad) {
+  const precioNormal = parseFloat(prod.precio);
+
+  if (!prod.precio_mayorista || !prod.cantidad_mayorista) {
+    return precioNormal * cantidad;
+  }
+
+  const precioMay = parseFloat(prod.precio_mayorista);
+  const cantMay   = parseInt(prod.cantidad_mayorista);
+
+  // Packs completos al precio mayorista, resto al precio normal
+  const packsCompletos = Math.floor(cantidad / cantMay);
+  const resto          = cantidad % cantMay;
+
+  return (packsCompletos * cantMay * precioMay) + (resto * precioNormal);
+}
+
 // ── Eliminar producto ────────────────────────
 function eliminarDelCarrito(id) {
   const carrito = getCarrito();
@@ -138,22 +156,44 @@ function renderCarrito() {
     const prod     = catalogoCache[id];
     if (!prod) return;
 
-    const precio   = parseFloat(prod.precio);
-    const subtotal = precio * cantidad;
+    const precioNormal = parseFloat(prod.precio);
+    const subtotal     = calcularSubtotal(prod, cantidad);
     total += subtotal;
 
     const emoji = { 'Lácteos':'🥛','Enlatados':'🥫','Cereales':'🌾','Snacks':'🍪','Condimentos':'🫙' }[prod.categoria] || '🛒';
+
+    // Info de precio mayorista aplicado
+    let precioInfoHtml = `<span style="color:var(--gris); font-size:0.82rem;">× $${precioNormal.toFixed(2)}</span>`;
+
+    if (prod.precio_mayorista && prod.cantidad_mayorista) {
+      const precioMay = parseFloat(prod.precio_mayorista);
+      const cantMay   = parseInt(prod.cantidad_mayorista);
+      const packsCompletos = Math.floor(cantidad / cantMay);
+      const resto          = cantidad % cantMay;
+
+      if (packsCompletos > 0 && resto > 0) {
+        precioInfoHtml = `
+          <span style="color:var(--azul); font-size:0.78rem; font-weight:800;">
+            ${packsCompletos * cantMay}u × $${precioMay.toFixed(2)} + ${resto}u × $${precioNormal.toFixed(2)}
+          </span>`;
+      } else if (packsCompletos > 0) {
+        precioInfoHtml = `
+          <span style="color:var(--azul); font-size:0.78rem; font-weight:800;">
+            💼 Precio mayorista × $${precioMay.toFixed(2)}
+          </span>`;
+      }
+    }
 
     itemsHTML += `
       <div class="carrito-item" id="item-${id}">
         <div class="carrito-item-icono">${emoji}</div>
         <div class="carrito-item-info">
           <div class="carrito-item-nombre">${prod.nombre}</div>
-          <div class="carrito-item-cantidad" style="display:flex; align-items:center; gap:0.5rem; margin-top:0.4rem;">
+          <div class="carrito-item-cantidad" style="display:flex; align-items:center; gap:0.5rem; margin-top:0.4rem; flex-wrap:wrap;">
             <button onclick="cambiarCantidad(${id}, -1)" style="border:1.5px solid #ddd; background:#fff; border-radius:6px; width:26px; height:26px; cursor:pointer; font-weight:800;">−</button>
             <span style="font-weight:800; font-size:1rem;">${cantidad}</span>
             <button onclick="cambiarCantidad(${id}, +1)" style="border:1.5px solid #ddd; background:#fff; border-radius:6px; width:26px; height:26px; cursor:pointer; font-weight:800;">+</button>
-            <span style="color:var(--gris); font-size:0.82rem;">× $${precio.toFixed(2)}</span>
+            ${precioInfoHtml}
           </div>
         </div>
         <div class="carrito-item-precio">$${subtotal.toFixed(2)}</div>

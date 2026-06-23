@@ -71,6 +71,10 @@ def lista_productos(request):
                 'categoria': p.categoria,
                 'descripcion': p.descripcion,
                 'imagen': f'data:image/jpeg;base64,{p.imagen_base64}' if p.imagen_base64 else None,
+                'precio_mayorista': str(p.precio_mayorista) if p.precio_mayorista else None,
+                'cantidad_mayorista': p.cantidad_mayorista,
+                'precio_oferta': str(p.precio_oferta) if p.precio_oferta else None,
+                'oferta_activa': p.oferta_activa,
             })
 
         return JsonResponse(data, safe=False)
@@ -356,8 +360,15 @@ def checkout(request):
             if cantidad <= 0:
                 continue
 
-            subtotal = producto.precio * cantidad
-            total += subtotal
+            # Lógica mayorista opción B
+            if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
+                packs    = cantidad // producto.cantidad_mayorista
+                resto    = cantidad % producto.cantidad_mayorista
+                subtotal = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * producto.precio)
+            else:
+                subtotal = producto.precio * cantidad
+
+            total += subtotal   
 
             items.append({
                 'nombre': producto.nombre,
@@ -511,7 +522,14 @@ def checkout(request):
                         )
                         return redirect('/carrito/')
 
-                    subtotal = producto.precio * cantidad
+                     # Lógica mayorista opción B
+                    if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
+                        packs     = cantidad // producto.cantidad_mayorista
+                        resto     = cantidad % producto.cantidad_mayorista
+                        subtotal  = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * producto.precio)
+                    else:
+                        subtotal  = producto.precio * cantidad
+
                     total += subtotal
 
                     productos_bloqueados.append((producto, cantidad))
@@ -1176,6 +1194,42 @@ def agregar_producto(request):
     if stock > 999999:
         messages.error(request, 'Stock demasiado grande')
         return redirect('/panel/')
+    
+    # ─────────────────────────────
+    # PRECIO MAYORISTA
+    # ─────────────────────────────
+
+    precio_mayorista   = request.POST.get('precio_mayorista', '').strip()
+    cantidad_mayorista = request.POST.get('cantidad_mayorista', '').strip()
+
+    precio_mayorista_val   = None
+    cantidad_mayorista_val = None
+
+    if precio_mayorista:
+        try:
+            precio_mayorista_val = Decimal(precio_mayorista)
+        except InvalidOperation:
+            messages.error(request, 'Precio mayorista inválido')
+            return redirect('/panel/')
+
+        if precio_mayorista_val <= 0:
+            messages.error(request, 'Precio mayorista inválido')
+            return redirect('/panel/')
+
+        if precio_mayorista_val >= precio:
+            messages.error(request, 'El precio mayorista debe ser menor al precio unitario')
+            return redirect('/panel/')
+
+    if cantidad_mayorista:
+        try:
+            cantidad_mayorista_val = int(cantidad_mayorista)
+        except ValueError:
+            messages.error(request, 'Cantidad mayorista inválida')
+            return redirect('/panel/')
+
+        if cantidad_mayorista_val < 2:
+            messages.error(request, 'La cantidad mayorista debe ser al menos 2')
+            return redirect('/panel/')
 
     # ─────────────────────────────
     # CATEGORÍA
@@ -1225,6 +1279,8 @@ def agregar_producto(request):
         stock=stock,
         categoria=categoria,
         imagen_base64=imagen_base64,
+        precio_mayorista=precio_mayorista_val,
+        cantidad_mayorista=cantidad_mayorista_val,
         activo=True
     )
 

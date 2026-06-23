@@ -315,6 +315,9 @@
           <input type="number" name="precio" placeholder="Precio" step="0.01" required/>
           <input type="number" name="stock"  placeholder="Stock inicial" required/>
 
+          <input type="number" name="precio_mayorista"   placeholder="Precio mayorista" step="0.01" style="flex:1; min-width:140px;"/>
+          <input type="number" name="cantidad_mayorista" placeholder="Cant. mayorista"  step="1"    style="flex:1; min-width:140px;"/>
+
           <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
             <option value="">Categoría...</option>
             <option value="Lácteos">Lácteos</option>
@@ -429,6 +432,12 @@
               </div>
 
               <!-- STOCK -->
+                {% if producto.precio_mayorista and producto.cantidad_mayorista %}
+                  <div style="font-size:0.78rem; font-weight:700; color:var(--azul); margin-top:0.2rem;">
+                    💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
+                  </div>
+                {% endif %}
+                
               <div class="prod-panel-stock" id="stock-{{ producto.id }}">
                 Stock: {{ producto.stock }}
 

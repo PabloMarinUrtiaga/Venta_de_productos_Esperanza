@@ -21,6 +21,9 @@ class Producto(models.Model):
     activo      = models.BooleanField(default=True)
 
     imagen_base64 = models.TextField(blank=True, null=True)
+    
+    precio_mayorista  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cantidad_mayorista = models.IntegerField(null=True, blank=True)
 
     precio_oferta = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     oferta_activa = models.BooleanField(default=False)

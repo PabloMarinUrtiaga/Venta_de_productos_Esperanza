@@ -34,7 +34,8 @@ function actualizarContadorNav() {
   if (el) el.textContent = `(${total})`;
 }
 
-function agregarAlCarrito(id, nombre) {
+function agregarAlCarrito(id, nombre, cantidad) {
+  cantidad = cantidad || 1;
   const carrito = getCarrito();
 
   const producto = todosLosProductos.find(p => p.id === id);
@@ -43,15 +44,20 @@ function agregarAlCarrito(id, nombre) {
   const cantidadActual = carrito[id] || 0;
 
   // 🚫 NO PERMITIR SUPERAR STOCK
-  if (cantidadActual >= stock) {
-    mostrarToast("🚫 No hay más stock disponible", "var(--rojo)");
+  if (cantidadActual + cantidad > stock) {
+    mostrarToast("🚫 No hay suficiente stock disponible", "var(--rojo)");
     return;
   }
 
-  carrito[id] = cantidadActual + 1;
+  carrito[id] = cantidadActual + cantidad;
 
   setCarrito(carrito);
-  mostrarToast(`✅ ${nombre} agregado al carrito`);
+
+  const msg = cantidad > 1
+    ? `✅ Pack x${cantidad} de ${nombre} agregado`
+    : `✅ ${nombre} agregado al carrito`;
+
+  mostrarToast(msg);
 }
 
 // ── Toast ────────────────────────────────────
@@ -84,27 +90,61 @@ function renderProductos(lista) {
   }
 
   grid.innerHTML = lista.map(p => {
-      const emoji = EMOJIS_CATEGORIA[p.categoria] || EMOJIS_CATEGORIA['default'];
+    const emoji = EMOJIS_CATEGORIA[p.categoria] || EMOJIS_CATEGORIA['default'];
 
-      const imagenHtml = p.imagen
-        ? `<img src="${p.imagen}" alt="${p.nombre}" style="width:100%; height:100%; object-fit:cover;">`
-        : emoji;
+    const imagenHtml = p.imagen
+      ? `<img src="${p.imagen}" alt="${p.nombre}" style="width:100%; height:100%; object-fit:cover;">`
+      : emoji;
 
-      return `
-        <div class="producto-card">
-          <div class="producto-card-img">
-            ${imagenHtml}
+     const tieneOferta   = p.oferta_activa && p.precio_oferta;
+     const tieneMayorista = p.precio_mayorista && p.cantidad_mayorista;
+
+      let precioHtml = '';
+
+      if (tieneOferta) {
+        precioHtml += `
+          <div class="producto-precio">
+            <span style="text-decoration:line-through; color:var(--gris); font-size:1rem; margin-right:0.4rem;">$${parseFloat(p.precio).toFixed(2)}</span>
+            <span style="color:var(--rojo);">$${parseFloat(p.precio_oferta).toFixed(2)}</span>
           </div>
-          <div class="producto-card-body">
-            <div class="producto-nombre">${p.nombre}</div>
-            <div class="producto-categoria">${p.categoria || 'General'}</div>
-            <div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>
-            <button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}')">
-              🛒 Agregar al carrito
-            </button>
-          </div>
-        </div>`;
-    }).join('');
+          <div style="font-size:0.75rem; font-weight:800; color:var(--rojo); margin-bottom:0.2rem;">🔥 Precio de oferta</div>`;
+      } else {
+        precioHtml += `<div class="producto-precio">$${parseFloat(p.precio).toFixed(2)}</div>`;
+      }
+
+      if (tieneMayorista) {
+        precioHtml += `
+          <div style="font-size:0.82rem; font-weight:800; color:var(--azul); margin-bottom:0.4rem;">
+            💼 $${parseFloat(p.precio_mayorista).toFixed(2)}/u comprando ${p.cantidad_mayorista} o más
+          </div>`;
+      }
+
+    const botonesHtml = p.precio_mayorista && p.cantidad_mayorista
+      ? `<div style="display:flex; gap:0.5rem;">
+           <button class="btn-agregar" style="flex:1;" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}', 1)">
+             🛒 x1
+           </button>
+           <button class="btn-agregar" style="flex:1; background:var(--azul);" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}', ${p.cantidad_mayorista})">
+             💼 Pack x${p.cantidad_mayorista}
+           </button>
+         </div>`
+      : `<button class="btn-agregar" onclick="agregarAlCarrito(${p.id}, '${p.nombre.replace(/'/g,"\\'")}', 1)">
+           🛒 Agregar al carrito
+         </button>`;
+
+    return `
+      <div class="producto-card">
+        <div class="producto-card-img">
+          ${imagenHtml}
+        </div>
+        <div class="producto-card-body">
+          <div class="producto-nombre">${p.nombre}</div>
+          <div class="producto-categoria">${p.categoria || 'General'}</div>
+          ${precioHtml}
+          ${botonesHtml}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function filtrarYRender() {
