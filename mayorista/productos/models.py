@@ -1,14 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # ── Producto ──────────────────────────────────
 CATEGORIA_CHOICES = [
-    ('Lácteos',     'Lácteos'),
-    ('Enlatados',   'Enlatados'),
-    ('Cereales',    'Cereales'),
-    ('Snacks',      'Snacks'),
-    ('Condimentos', 'Condimentos'),
+    ('Lácteos',              'Lácteos'),
+    ('Gaseosas',             'Gaseosas'),
+    ('Aperitivos',           'Aperitivos'),
+    ('Almacén',              'Almacén'),
+    ('Bebidas Alcohólicas',  'Bebidas Alcohólicas'),
 ]
 
 
@@ -113,3 +114,10 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
+
+@receiver(post_save, sender=User)
+def crear_perfil(sender, instance, created, **kwargs):
+    if created:
+        ultimo = Perfil.objects.order_by('-numero_cliente').first()
+        numero = (ultimo.numero_cliente + 1) if ultimo and ultimo.numero_cliente else 1
+        Perfil.objects.create(user=instance, numero_cliente=numero)
