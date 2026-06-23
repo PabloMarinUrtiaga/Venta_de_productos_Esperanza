@@ -18,6 +18,7 @@ from django_ratelimit.decorators import ratelimit
 import re, mercadopago, json, hmac, hashlib, base64, io
 from django.core.paginator import Paginator
 from PIL import Image
+from .models import Producto, Pedido, PedidoItem, Perfil
 
 
 sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
@@ -1062,10 +1063,10 @@ def panel(request):
     # 📤 Render final
     # ─────────────────────────────────────
     return render(request, 'productos/panel.html', {
-        'productos': productos,
-        'clientes': clientes_data,
-        'pedidos': pedidos
-    })
+    'productos': productos,
+    'clientes': clientes_data,
+    'pedidos': pedidos,
+})
     
 
 #Agregar productos
@@ -1794,7 +1795,59 @@ def mp_webhook(request):
 
     return HttpResponse(status=200)
 
+@login_required
+def agregar_cliente(request):
+    if not request.user.is_staff:
+        messages.error(request, 'No autorizado')
+        return redirect('/')
 
+    if request.method != 'POST':
+        return redirect('/panel/')
+
+    username = request.POST.get('username', '').strip()
+    nombre   = request.POST.get('nombre_completo', '').strip()
+    telefono = request.POST.get('telefono', '').strip()
+    print('DATOS RECIBIDOS:', repr(username), repr(nombre), repr(telefono))
+
+    if not username or not nombre or not telefono:
+        messages.error(request, 'Completá todos los campos')
+        return redirect('/panel/')
+
+    if User.objects.filter(username=username).exists():
+        messages.error(request, 'Ya existe un cliente con ese usuario')
+        return redirect('/panel/')
+
+    try:
+        user = User.objects.create_user(
+            username=username,
+            password='esperanza1234',
+            first_name=nombre,
+        )
+        print('USUARIO CREADO:', user.id, user.username)
+        Perfil.objects.filter(user=user).update(telefono=telefono)
+        print('PERFIL ACTUALIZADO')
+    except Exception as e:
+        print('ERROR:', e)
+        messages.error(request, f'Error: {e}')
+        return redirect('/panel/')
+
+    messages.success(request, f'Cliente {nombre} creado. Contraseña temporal: esperanza1234')
+    return redirect('/panel/')
+
+
+@login_required
+def eliminar_cliente(request, user_id):
+    if not request.user.is_staff:
+        return redirect('/')
+    if request.method != 'POST':
+        return redirect('/panel/')
+    try:
+        user = User.objects.get(id=user_id)
+        user.delete()
+        messages.success(request, 'Cliente eliminado')
+    except User.DoesNotExist:
+        messages.error(request, 'Cliente no encontrado')
+    return redirect('/panel/')
 
 #Errores
 def error_404(request, exception=None):

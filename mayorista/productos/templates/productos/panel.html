@@ -318,10 +318,10 @@
           <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
             <option value="">Categoría...</option>
             <option value="Lácteos">Lácteos</option>
-            <option value="Enlatados">Enlatados</option>
-            <option value="Cereales">Cereales</option>
-            <option value="Snacks">Snacks</option>
-            <option value="Condimentos">Condimentos</option>
+            <option value="Enlatados">Gaseosas</option>
+            <option value="Cereales">Aperitivos</option>
+            <option value="Snacks">Almacén</option>
+            <option value="Condimentos">Bebidas Alcohólica</option>
           </select>
 
           <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="flex:1; min-width:140px; font-size:0.85rem;"/>
@@ -494,10 +494,10 @@
                 <select name="categoria" onchange="this.form.submit()" style="padding:0.45rem 0.7rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:600; background:var(--blanco); color:var(--oscuro); width:120px;">
                   <option value="">Categoría...</option>
                   <option value="Lácteos"     {% if producto.categoria == 'Lácteos' %}selected{% endif %}>Lácteos</option>
-                  <option value="Enlatados"   {% if producto.categoria == 'Enlatados' %}selected{% endif %}>Enlatados</option>
-                  <option value="Cereales"    {% if producto.categoria == 'Cereales' %}selected{% endif %}>Cereales</option>
-                  <option value="Snacks"      {% if producto.categoria == 'Snacks' %}selected{% endif %}>Snacks</option>
-                  <option value="Condimentos" {% if producto.categoria == 'Condimentos' %}selected{% endif %}>Condimentos</option>
+                  <option value="Gaseosas"   {% if producto.categoria == 'Gaseosas' %}selected{% endif %}>Gaseosas</option>
+                  <option value="Aperitivos"    {% if producto.categoria == 'Aperitivos' %}selected{% endif %}>Aperitivos</option>
+                  <option value="Almacén"      {% if producto.categoria == 'Almacén' %}selected{% endif %}>Almacén</option>
+                  <option value="Bebidas Alcohólica" {% if producto.categoria == 'Bebidas Alcohólica' %}selected{% endif %}>Bebidas Alcohólica</option>
                 </select>
               </form>
 
@@ -586,28 +586,47 @@
     </div>
 
     <!-- ── CLIENTES ── -->
-    <div class="panel-section">
-      <div class="panel-section-header">👥 Clientes</div>
-      <div class="panel-section-body">
-        <form method="GET" class="buscador-panel">
-          <input type="text" name="cliente" placeholder="🔍 Buscar cliente..." value="{{ request.GET.cliente }}"/>
-          <button type="submit" class="btn-sm btn-primary-sm">Buscar</button>
+<!-- ── AGREGAR CLIENTE ── -->
+<div class="panel-section">
+  <div class="panel-section-header">👤 Agregar cliente</div>
+  <div class="panel-section-body">
+    <form method="POST" action="{% url 'agregar_cliente' %}" class="form-inline">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Usuario (sin espacios)" required/>
+      <input type="text" name="nombre_completo" placeholder="Nombre completo" required/>
+      <input type="text" name="telefono" placeholder="Teléfono" required/>
+      <button type="submit" class="btn-sm btn-primary-sm">Agregar cliente</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── CLIENTES ── -->
+<div class="panel-section">
+  <div class="panel-section-header">👥 Clientes</div>
+  <div class="panel-section-body">
+    <form method="GET" class="buscador-panel">
+      <input type="text" name="cliente" placeholder="🔍 Buscar cliente..." value="{{ request.GET.cliente }}"/>
+      <button type="submit" class="btn-sm btn-primary-sm">Buscar</button>
+    </form>
+    {% for c in clientes %}
+      <div class="cliente-row">
+        <div>
+          <a href="/historial/{{ c.user__id }}/" style="text-decoration:none;">
+            <div class="cliente-nombre">{{ c.user__username }} → Ver historial</div>
+          </a>
+          <div class="cliente-meta">{{ c.cantidad_pedidos }} pedido{{ c.cantidad_pedidos|pluralize }}</div>
+        </div>
+        <div class="cliente-total">${{ c.total_gastado|default:"0" }}</div>
+        <form method="POST" action="{% url 'eliminar_cliente' c.user__id %}" onsubmit="return confirm('¿Eliminar a {{ c.user__username }}?')">
+          {% csrf_token %}
+          <button type="submit" class="btn-sm btn-danger-sm">🗑 Eliminar</button>
         </form>
-        {% for c in clientes %}
-          <div class="cliente-row">
-            <div>
-              <a href="/historial/{{ c.user__id }}/" style="text-decoration:none;">
-                <div class="cliente-nombre">{{ c.user__username }} → Ver historial</div>
-              </a>
-              <div class="cliente-meta">{{ c.cantidad_pedidos }} pedido{{ c.cantidad_pedidos|pluralize }}</div>
-            </div>
-            <div class="cliente-total">${{ c.total_gastado|default:"0" }}</div>
-          </div>
-        {% empty %}
-                  <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
-        {% endfor %}
       </div>
-    </div>
+    {% empty %}
+      <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No se encontraron clientes.</p>
+    {% endfor %}
+  </div>
+</div>
 
     <!-- ── PEDIDOS ── -->
     <div class="panel-section">
@@ -658,7 +677,7 @@
   </div>
 
   <footer>
-    <strong>ESPERANZA</strong> · Distribuidora Mayorista de Alimentos · 2026
+    <strong>ESPERANZA</strong> · venta de productos Esperanza · 2026
   </footer>
 
   <script>
