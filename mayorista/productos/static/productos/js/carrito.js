@@ -53,7 +53,9 @@ async function obtenerCatalogo() {
 
 // ── Cálculo precio mayorista (Opción B) ──────
 function calcularSubtotal(prod, cantidad) {
-  const precioNormal = parseFloat(prod.precio);
+  const precioNormal = (prod.oferta_activa && prod.precio_oferta)
+    ? parseFloat(prod.precio_oferta)
+    : parseFloat(prod.precio);
 
   if (!prod.precio_mayorista || !prod.cantidad_mayorista) {
     return precioNormal * cantidad;
@@ -62,7 +64,6 @@ function calcularSubtotal(prod, cantidad) {
   const precioMay = parseFloat(prod.precio_mayorista);
   const cantMay   = parseInt(prod.cantidad_mayorista);
 
-  // Packs completos al precio mayorista, resto al precio normal
   const packsCompletos = Math.floor(cantidad / cantMay);
   const resto          = cantidad % cantMay;
 
@@ -156,7 +157,9 @@ function renderCarrito() {
     const prod     = catalogoCache[id];
     if (!prod) return;
 
-    const precioNormal = parseFloat(prod.precio);
+    const precioNormal = (prod.oferta_activa && prod.precio_oferta)
+      ? parseFloat(prod.precio_oferta)
+      : parseFloat(prod.precio);
     const subtotal     = calcularSubtotal(prod, cantidad);
     total += subtotal;
 

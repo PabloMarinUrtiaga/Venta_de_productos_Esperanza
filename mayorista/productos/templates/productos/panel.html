@@ -373,71 +373,23 @@
               </div>
 
               <!-- PRECIO -->
-              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-
-                <div class="prod-panel-precio">
-
-                  {% if producto.oferta_activa and producto.precio_oferta %}
-
-                    <span style="
-                      text-decoration:line-through;
-                      color:#888;
-                      font-size:1rem;
-                      margin-right:0.5rem;
-                    ">
-                      ${{ producto.precio }}
-                    </span>
-
-                    <span style="color:#E53935;">
-                      ${{ producto.precio_oferta }}
-                    </span>
-
-                  {% else %}
-
+              <div class="prod-panel-precio">
+                {% if producto.oferta_activa and producto.precio_oferta %}
+                  <span style="text-decoration:line-through; color:#888; font-size:1rem; margin-right:0.5rem;">
                     ${{ producto.precio }}
-
-                  {% endif %}
-
-                </div>
-
-                <!-- CHECK OFERTA -->
-                <form method="POST"
-                      action="{% url 'editar_oferta' producto.id %}"
-                      style="display:flex; align-items:center; gap:0.4rem;">
-
-                  {% csrf_token %}
-
-                  <input type="hidden"
-                        name="precio_oferta"
-                        value="{{ producto.precio_oferta|default:'' }}">
-
-                  <input type="checkbox"
-                        name="oferta_activa"
-                        onchange="this.form.submit()"
-
-                        {% if producto.oferta_activa %}
-                          checked
-                        {% endif %}>
-
-                  <span style="
-                    font-size:0.85rem;
-                    font-weight:700;
-                    color:#555;
-                  ">
-                    Oferta
                   </span>
-
-                </form>
-
+                  <span style="color:#E53935;">${{ producto.precio_oferta }}</span>
+                {% else %}
+                  ${{ producto.precio }}
+                {% endif %}
               </div>
 
-              <!-- STOCK -->
-                {% if producto.precio_mayorista and producto.cantidad_mayorista %}
-                  <div style="font-size:0.78rem; font-weight:700; color:var(--azul); margin-top:0.2rem;">
-                    💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
-                  </div>
-                {% endif %}
-                
+              {% if producto.precio_mayorista and producto.cantidad_mayorista %}
+                <div style="font-size:0.78rem; font-weight:700; color:var(--azul); margin-top:0.2rem;">
+                  💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
+                </div>
+              {% endif %}
+
               <div class="prod-panel-stock" id="stock-{{ producto.id }}">
                 Stock: {{ producto.stock }}
 
@@ -475,28 +427,23 @@
 
               </form>
 
-              <!-- EDITAR OFERTA -->
-              <form method="POST"
-                    action="{% url 'editar_oferta' producto.id %}"
-                    class="form-precio">
-
-                {% csrf_token %}
-
-                <input type="number"
-                      name="precio_oferta"
-                      placeholder="Precio oferta"
-                      step="0.01"
-                      value="{{ producto.precio_oferta|default:'' }}">
-
-                <input type="hidden"
+             <!-- EDITAR OFERTA -->
+             <form method="POST" action="{% url 'editar_oferta' producto.id %}" class="form-precio">
+              {% csrf_token %}
+              <input type="number"
+                    name="precio_oferta"
+                    placeholder="Precio oferta"
+                    step="0.01"
+                    value="{{ producto.precio_oferta|default:'' }}">
+              <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.82rem; font-weight:700; color:#555; cursor:pointer;">
+                <input type="checkbox"
                       name="oferta_activa"
-                      value="{% if producto.oferta_activa %}on{% endif %}">
-
-                <button type="submit" class="btn-sm btn-warning-sm">
-                  🔥 Actualizar oferta
-                </button>
-
-              </form>
+                      {% if producto.oferta_activa %}checked{% endif %}>
+                Activa
+              </label>
+              <button type="submit" class="btn-sm btn-warning-sm">🔥 Guardar</button>
+            </form>
+              
               <!-- EDITAR CATEGORÍA -->
               <form method="POST" action="{% url 'editar_categoria' producto.id %}" class="form-precio">
                 {% csrf_token %}
