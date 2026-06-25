@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crear pedido — Esperanza</title>
+  <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
+  <style>
+    .crear-pedido-wrap {
+      max-width: 860px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+    .crear-pedido-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: var(--oscuro);
+      border-left: 6px solid var(--rojo);
+      padding-left: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .producto-fila {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+      background: var(--blanco);
+    }
+    .producto-fila:last-child { border-bottom: none; }
+    .producto-nombre { font-weight: 800; color: var(--oscuro); }
+    .producto-precio { color: var(--rojo); font-weight: 800; }
+    .cantidad-input {
+      width: 70px;
+      padding: 0.4rem 0.6rem;
+      border: 2px solid #e0e0da;
+      border-radius: var(--radio-sm);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      text-align: center;
+    }
+    .btn-crear {
+      background: var(--rojo);
+      color: white;
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.8rem 2rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+    .btn-volver {
+      display: inline-block;
+      background: var(--oscuro);
+      color: var(--amarillo);
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 0.7rem 1.4rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+    }
+    .seccion { background: var(--blanco); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a class="navbar-logo" href="/productos/">
+      <img src="{% static 'productos/img/logo_esperanza.png' %}" alt="Esperanza" style="height:48px; width:auto; vertical-align:middle; margin-right:0.4rem;">ESPE<span>RANZA</span>
+    </a>
+  </nav>
+
+  <div class="crear-pedido-wrap">
+
+    <div class="crear-pedido-titulo">Crear pedido para {{ cliente.username }}</div>
+
+    <a href="/historial/{{ cliente.id }}/" class="btn-volver">⬅ Volver al historial</a>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alerta alerta-{{ msg.tags }}" style="margin-bottom:1rem;">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="seccion">
+        {% for producto in productos %}
+          <div class="producto-fila">
+            <div>
+              <div class="producto-nombre">{{ producto.nombre }}</div>
+              <div class="producto-precio">${{ producto.precio }} · Stock: {{ producto.stock }}</div>
+            </div>
+            <input
+              type="number"
+              name="cantidad_{{ producto.id }}"
+              value="0"
+              min="0"
+              max="{{ producto.stock }}"
+              class="cantidad-input"
+            />
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn-crear">✅ Confirmar pedido</button>
+    </form>
+
+  </div>
+
+</body>
+</html>

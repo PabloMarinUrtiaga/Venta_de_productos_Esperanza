@@ -1911,6 +1911,89 @@ def eliminar_cliente(request, user_id):
         messages.error(request, 'Cliente no encontrado')
     return redirect('/panel/')
 
+@login_required
+def crear_pedido(request, user_id):
+    if not request.user.is_staff:
+        return HttpResponse(status=403)
+
+    cliente = get_object_or_404(User, id=user_id)
+    productos = Producto.objects.filter(activo=True, stock__gt=0).order_by('nombre')
+
+    if request.method == 'POST':
+        items_seleccionados = []
+        total = Decimal('0')
+
+        for producto in productos:
+            cantidad_str = request.POST.get(f'cantidad_{producto.id}', '0')
+            try:
+                cantidad = int(cantidad_str)
+            except ValueError:
+                cantidad = 0
+
+            if cantidad > 0:
+                if cantidad > producto.stock:
+                    messages.error(request, f'Stock insuficiente para {producto.nombre}')
+                    return redirect(f'/panel/crear-pedido/{user_id}/')
+
+                precio_base = producto.precio_oferta if (producto.oferta_activa and producto.precio_oferta) else producto.precio
+
+                if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
+                    packs    = cantidad // producto.cantidad_mayorista
+                    resto    = cantidad % producto.cantidad_mayorista
+                    subtotal = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * precio_base)
+                else:
+                    subtotal = precio_base * cantidad
+
+                items_seleccionados.append((producto, cantidad, subtotal))
+                total += subtotal
+
+        if not items_seleccionados:
+            messages.error(request, 'Seleccioná al menos un producto')
+            return redirect(f'/panel/crear-pedido/{user_id}/')
+
+        pedido = Pedido.objects.create(
+            user=cliente,
+            total=total,
+            nombre=cliente.first_name or cliente.username,
+            apellido='',
+            email=cliente.email,
+            pago='efectivo',
+            entrega='retiro',
+            estado='en_preparacion',
+            pagado=True,
+        )
+
+        for producto, cantidad, subtotal in items_seleccionados:
+            precio_unitario = subtotal / cantidad
+            PedidoItem.objects.create(
+                pedido=pedido,
+                producto=producto,
+                cantidad=cantidad,
+                precio=precio_unitario,
+            )
+            producto.stock -= cantidad
+            producto.save(update_fields=['stock'])
+
+        messages.success(request, f'Pedido #{pedido.id} creado para {cliente.username}')
+        return redirect(f'/historial/{user_id}/')
+
+    return render(request, 'productos/crear_pedido.html', {
+        'cliente': cliente,
+        'productos': productos,
+    })
+
+@login_required
+def factura_pedido(request, pedido_id):
+    if not request.user.is_staff:
+        return HttpResponse(status=403)
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    items = PedidoItem.objects.filter(pedido=pedido).select_related('producto')
+    return render(request, 'productos/factura.html', {
+        'pedido': pedido,
+        'items': items,
+    })
+
+
 #Errores
 def error_404(request, exception=None):
     return render(request, 'productos/404.html', status=404)

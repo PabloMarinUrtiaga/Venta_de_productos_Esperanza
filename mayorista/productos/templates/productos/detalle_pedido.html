@@ -348,7 +348,10 @@
       </div>
     </div>
 
-    <a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
+    {% if request.user.is_staff %}
+  <a href="/pedido/{{ pedido.id }}/factura/" class="btn-volver" style="background:var(--rojo); margin-right:0.5rem;">🖨️ Imprimir factura</a>
+{% endif %}
+<a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
 
   </div>
 

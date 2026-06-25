@@ -170,10 +170,11 @@
         {% endif %}
       </div>
       {% if request.user.is_staff %}
-        <a href="/panel/" class="btn-volver">⬅ Volver al panel</a>
-      {% else %}
-        <a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
-      {% endif %}
+  <a href="/panel/" class="btn-volver">⬅ Volver al panel</a>
+  <a href="/panel/crear-pedido/{{ usuario.id }}/" class="btn-volver" style="background:var(--rojo);">➕ Crear pedido</a>
+{% else %}
+  <a href="/perfil/" class="btn-volver">⬅ Volver al perfil</a>
+{% endif %}
     </div>
 
     <div class="historial-section">

@@ -7,7 +7,8 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              agregar_producto, eliminar_producto, 
                              editar_precio, repetir_pedido, compra_exitosa,
                              cambiar_estado, cambiar_stock_ajax, stock_actual,
-                             mp_webhook, editar_stock, editar_oferta, editar_categoria,editar_imagen,agregar_cliente,eliminar_cliente )
+                             mp_webhook, editar_stock, editar_oferta, editar_categoria,
+                             editar_imagen,agregar_cliente,eliminar_cliente, crear_pedido,factura_pedido)
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
@@ -49,6 +50,8 @@ urlpatterns = [
     path('editar-imagen/<int:producto_id>/', editar_imagen, name='editar_imagen'),
     path('panel/agregar-cliente/', agregar_cliente, name='agregar_cliente'),
     path('panel/eliminar-cliente/<int:user_id>/', eliminar_cliente, name='eliminar_cliente'),
+    path('panel/crear-pedido/<int:user_id>/', crear_pedido, name='crear_pedido'),
+    path('pedido/<int:pedido_id>/factura/', factura_pedido, name='factura_pedido'),
 ]
 
 handler404 = 'productos.views.error_404'

@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Factura #{{ pedido.id }} — Esperanza</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #111; padding: 2rem; }
+
+    .factura-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #111;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .factura-empresa h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .factura-empresa p {
+      font-size: 0.82rem;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .factura-meta {
+      text-align: right;
+    }
+
+    .factura-meta h2 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .factura-meta p {
+      font-size: 0.82rem;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .factura-cliente {
+      background: #f7f7f5;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .factura-cliente h3 {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #555;
+      margin-bottom: 0.6rem;
+    }
+
+    .factura-cliente-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 2rem;
+    }
+
+    .factura-cliente-grid div label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #888;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .factura-cliente-grid div span {
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+
+    thead tr {
+      background: #111;
+      color: white;
+    }
+
+    thead th {
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #eee;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.88rem;
+    }
+
+    .factura-total {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .factura-total table {
+      width: auto;
+      min-width: 260px;
+      margin-bottom: 0;
+    }
+
+    .factura-total td {
+      padding: 0.4rem 0.8rem;
+    }
+
+    .factura-total tr:last-child td {
+      font-size: 1.1rem;
+      font-weight: 900;
+      border-top: 2px solid #111;
+      padding-top: 0.6rem;
+    }
+
+    .factura-footer {
+      margin-top: 3rem;
+      border-top: 1px solid #ddd;
+      padding-top: 1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #888;
+    }
+
+    .btn-imprimir {
+      display: inline-block;
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.6rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+      text-decoration: none;
+    }
+
+    @media print {
+      .btn-imprimir { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir</button>
+
+  <div class="factura-header">
+    <div class="factura-empresa">
+      <h1>Esperanza</h1>
+      <p>Venta de Productos Esperanza</p>
+      <p>CBU: 0720502688000002645072</p>
+      <p>Alias: ESPERANZA.DIST</p>
+    </div>
+    <div class="factura-meta">
+      <h2>Factura #{{ pedido.id }}</h2>
+      <p>Fecha: {{ pedido.fecha|date:"d/m/Y — H:i" }}</p>
+      <p>Estado: {{ pedido.get_estado_display }}</p>
+    </div>
+  </div>
+
+  <div class="factura-cliente">
+    <h3>Datos del cliente</h3>
+    <div class="factura-cliente-grid">
+      <div>
+        <label>Nombre</label>
+        <span>{{ pedido.nombre }} {{ pedido.apellido }}</span>
+      </div>
+      <div>
+        <label>Email</label>
+        <span>{{ pedido.email|default:"—" }}</span>
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <span>{{ pedido.telefono|default:"—" }}</span>
+      </div>
+      <div>
+        <label>Método de pago</label>
+        <span>
+          {% if pedido.pago == 'transferencia' %}Transferencia
+          {% elif pedido.pago == 'efectivo' %}Efectivo
+          {% else %}MercadoPago{% endif %}
+        </span>
+      </div>
+      <div>
+        <label>Entrega</label>
+        <span>
+          {% if pedido.entrega == 'domicilio' %}Envío a domicilio
+          {% else %}Retiro en el local{% endif %}
+        </span>
+      </div>
+      {% if pedido.entrega == 'domicilio' %}
+      <div>
+        <label>Dirección</label>
+        <span>{{ pedido.direccion }}{% if pedido.piso_depto %}, {{ pedido.piso_depto }}{% endif %} — {{ pedido.localidad }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Precio unit.</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.producto.nombre }}</td>
+          <td>${{ item.precio }}</td>
+          <td>× {{ item.cantidad }}</td>
+          <td>${{ item.subtotal }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="factura-total">
+    <table>
+      <tr>
+        <td>Total</td>
+        <td><strong>${{ pedido.total }}</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="factura-footer">
+    Esperanza · Venta de Productos · 2026
+  </div>
+
+</body>
+</html>
