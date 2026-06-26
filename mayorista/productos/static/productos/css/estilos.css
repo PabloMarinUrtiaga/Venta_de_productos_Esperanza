@@ -194,6 +194,67 @@ body {
   color: var(--oscuro);
 }
 
+.footer-contacto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+  padding: 0.2rem 0 0.5rem;
+  margin-top: 0;
+}
+
+.footer-contacto-item {
+  min-width: 220px;
+  text-align: center;
+}
+
+.footer-contacto-item strong {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 1rem;
+}
+
+.footer-contacto-item span,
+.footer-contacto-item .footer-contacto-text {
+  display: block;
+  color: var(--gris);
+}
+
+@media (max-width: 720px) {
+  .footer-contacto {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.footer-contacto .btn-outline {
+  display: inline-block;
+  border: 2px solid var(--amarillo);
+  color: var(--amarillo);
+  border-radius: var(--radio-sm);
+  padding: 0.4rem 1rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.footer-contacto .btn-outline:hover {
+  background: var(--amarillo);
+  color: var(--oscuro);
+}
+
+.footer-link {
+  color: #aaa !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
 /* ── CATEGORÍAS (index) ── */
 .secciones {
   display: grid;
