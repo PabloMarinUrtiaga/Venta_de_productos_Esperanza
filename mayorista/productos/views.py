@@ -144,8 +144,17 @@ def ver_carrito(request):
     total = 0
     for producto_id, cantidad in carrito.items():
         try:
-            producto = Producto.objects.get(id=producto_id,activo=True)
-            subtotal = producto.precio * cantidad
+            producto = Producto.objects.get(id=producto_id, activo=True)
+
+            precio_base = producto.precio_oferta if (producto.oferta_activa and producto.precio_oferta) else producto.precio
+
+            if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
+                packs    = cantidad // producto.cantidad_mayorista
+                resto    = cantidad % producto.cantidad_mayorista
+                subtotal = (packs * producto.precio_mayorista) + (resto * precio_base)
+            else:
+                subtotal = precio_base * cantidad
+
             total += subtotal
             productos.append({
                 'producto': producto,
@@ -1762,7 +1771,6 @@ def crear_pedido(request, user_id):
             pago='efectivo',
             entrega='retiro',
             estado='en_preparacion',
-            pagado=True,
         )
 
         for producto, cantidad, subtotal in items_seleccionados:
