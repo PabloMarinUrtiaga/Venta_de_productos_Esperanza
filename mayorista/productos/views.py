@@ -10,14 +10,12 @@ from .models import Producto, Pedido, PedidoItem, Perfil
 from django.conf import settings
 from django.db import transaction, models
 from django.contrib import messages
-from django.utils import timezone
 from django.db.models import Q, Sum, Count
 from decimal import Decimal, InvalidOperation
 from django_ratelimit.decorators import ratelimit
-import re, json, hmac, hashlib, base64, io
+import re, json, base64, io
 from django.core.paginator import Paginator
 from PIL import Image
-from .models import Producto, Pedido, PedidoItem, Perfil
 
 
 
@@ -1185,7 +1183,6 @@ def agregar_producto(request):
     categoria = request.POST.get('categoria', '').strip()
     categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas']
     categoria = request.POST.get('categoria', '').strip()
-    print('CATEGORIA RECIBIDA:', repr(categoria))
     if categoria and categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
         return redirect('/panel/')
@@ -1680,7 +1677,6 @@ def agregar_cliente(request):
     username = request.POST.get('username', '').strip()
     nombre   = request.POST.get('nombre_completo', '').strip()
     telefono = request.POST.get('telefono', '').strip()
-    print('DATOS RECIBIDOS:', repr(username), repr(nombre), repr(telefono))
 
     if not username or not nombre or not telefono:
         messages.error(request, 'Completá todos los campos')
@@ -1696,11 +1692,8 @@ def agregar_cliente(request):
             password='esperanza1234',
             first_name=nombre,
         )
-        print('USUARIO CREADO:', user.id, user.username)
         Perfil.objects.filter(user=user).update(telefono=telefono)
-        print('PERFIL ACTUALIZADO')
     except Exception as e:
-        print('ERROR:', e)
         messages.error(request, f'Error: {e}')
         return redirect('/panel/')
 
