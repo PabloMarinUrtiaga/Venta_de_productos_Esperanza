@@ -10,18 +10,17 @@ from .models import Producto, Pedido, PedidoItem, Perfil
 from django.conf import settings
 from django.db import transaction, models
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Q, Sum, Count
 from decimal import Decimal, InvalidOperation
 from django_ratelimit.decorators import ratelimit
-import re, mercadopago, json, hmac, hashlib, base64, io
+import re, json, hmac, hashlib, base64, io
 from django.core.paginator import Paginator
 from PIL import Image
 from .models import Producto, Pedido, PedidoItem, Perfil
 
 
-sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
+
 
 def comprimir_imagen(archivo):
     """
@@ -485,7 +484,7 @@ def checkout(request):
         pagos_validos = [
             'transferencia',
             'efectivo',
-            'mercadopago'
+            
         ]
 
         if pago not in pagos_validos:
@@ -586,62 +585,17 @@ def checkout(request):
                     precio=precio_real,
                 )
 
-                # SOLO descontar stock si NO es MercadoPago
-                if pago != 'mercadopago':
+                
 
-                    producto.stock -= cantidad
+                producto.stock -= cantidad
 
-                    producto.save(update_fields=['stock'])
+                producto.save(update_fields=['stock'])
 
         # LIMPIAR CARRITO
         request.session['carrito'] = {}
         request.session.modified = True
 
-        # ─────────────────────────────
-        # MERCADOPAGO
-        # ─────────────────────────────
-        if pago == 'mercadopago':
-
-            preference_data = {
-                'items': [
-                    {
-                        'title': f'Pedido #{pedido.id}',
-                        'quantity': 1,
-                        'currency_id': 'ARS',
-                        'unit_price': float(total)
-                    }
-                ],
-
-                'external_reference': str(pedido.id),
-
-                'back_urls': {
-                    'success': f'{settings.SITE_URL}/compra-exitosa/{pedido.id}/',
-                    'failure': f'{settings.SITE_URL}/carrito/',
-                    'pending': f'{settings.SITE_URL}/carrito/',
-                },
-
-                'auto_return': 'approved',
-
-                'notification_url': f'{settings.SITE_URL}/webhook/mercadopago/',
-                }
-
-            preference_response = sdk.preference().create(preference_data)
-
-            status = preference_response.get('status')
-
-            if status not in [200, 201]:
-
-                messages.error(request, 'Error al conectar con MercadoPago')
-                return redirect('/carrito/')
-
-            preference = preference_response['response']
-            
-
-            pedido.mp_preference_id = preference.get('id', '')
-            pedido.save()
-
-            return redirect(preference['init_point'])
-
+        
         # ─────────────────────────────
         # OTROS PAGOS
         # ─────────────────────────────
@@ -665,10 +619,6 @@ def compra_exitosa(request, pedido_id):
         pedido = Pedido.objects.get(id=pedido_id, user=request.user)
     except Pedido.DoesNotExist:
         return redirect('/')
-
-    if pedido.pago == 'mercadopago' and not pedido.pagado:
-        messages.error(request, 'El pago con MercadoPago no fue completado')
-        return redirect('/carrito/')
 
     return render(request, 'productos/checkout.html', {
         'pedido': pedido,
@@ -1707,129 +1657,7 @@ def editar_imagen(request, producto_id):
     messages.success(request, 'Imagen actualizada')
     return redirect('/panel/')
 
-# WEBHOOK
-@csrf_exempt
-def mp_webhook(request):
 
-    if request.method != "POST":
-        return HttpResponse(status=405)
-
-    # ─────────────────────────────
-    # VERIFICAR FIRMA DE MP
-    # ─────────────────────────────
-    webhook_secret = settings.MP_WEBHOOK_SECRET
-
-    if webhook_secret:
-        x_signature  = request.headers.get("x-signature", "")
-        x_request_id = request.headers.get("x-request-id", "")
-
-        ts   = ""
-        v1   = ""
-
-        for part in x_signature.split(","):
-            part = part.strip()
-            if part.startswith("ts="):
-                ts = part[3:]
-            elif part.startswith("v1="):
-                v1 = part[3:]
-
-        if not ts or not v1:
-            return HttpResponse(status=400)
-
-        data_id = request.GET.get("data.id", "")
-
-        manifest = f"id:{data_id};request-id:{x_request_id};ts:{ts};"
-
-        expected = hmac.new(
-            key =webhook_secret.encode("utf-8"),
-            msg =manifest.encode("utf-8"),
-            digestmod=hashlib.sha256
-        ).hexdigest()
-
-        if not hmac.compare_digest(expected, v1):
-            return HttpResponse(status=401)
-
-    # ─────────────────────────────
-    # JSON SEGURO
-    # ─────────────────────────────
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return HttpResponse(status=400)
-
-    if data.get("type") != "payment":
-        return HttpResponse(status=200)
-
-    payment_id = data.get("data", {}).get("id")
-
-    if not payment_id:
-        return HttpResponse(status=200)
-
-    # ─────────────────────────────
-    # CONSULTAR A MP
-    # ─────────────────────────────
-    try:
-        payment_info = sdk.payment().get(payment_id)
-    except Exception as e:
-        return HttpResponse(status=500)
-
-    payment = payment_info.get("response", {})
-
-    if payment.get("status") != "approved":
-        return HttpResponse(status=200)
-
-    pedido_id = payment.get("external_reference")
-
-    if not pedido_id:
-        return HttpResponse(status=200)
-
-    try:
-        pedido = Pedido.objects.get(id=pedido_id)
-    except Pedido.DoesNotExist:
-        return HttpResponse(status=200)
-
-    if pedido.pagado:
-        return HttpResponse(status=200)
-
-    monto_mp = Decimal(str(payment.get("transaction_amount", 0)))
-
-    if monto_mp != pedido.total:
-        return HttpResponse(status=400)
-
-    payment_id_str = str(payment_id)
-
-    if Pedido.objects.filter(mp_payment_id=payment_id_str).exists():
-        return HttpResponse(status=200)
-
-    # ─────────────────────────────
-    # TODO OK → PAGAR (todo dentro del atomic)
-    # ─────────────────────────────
-    with transaction.atomic():
-
-        pedido = Pedido.objects.select_for_update().get(id=pedido.id)
-
-        if pedido.pagado:
-            return HttpResponse(status=200)
-
-        items = PedidoItem.objects.select_related('producto').filter(pedido=pedido)
-
-        for item in items:
-            producto = Producto.objects.select_for_update().get(id=item.producto.id)
-
-            if producto.stock < item.cantidad:
-                return HttpResponse(status=400)
-
-            producto.stock -= item.cantidad
-            producto.save(update_fields=['stock'])
-
-        # MARCAR PAGADO DENTRO DEL ATOMIC
-        pedido.pagado        = True
-        pedido.estado        = "en_preparacion"
-        pedido.mp_payment_id = payment_id_str
-        pedido.fecha_pago    = timezone.now()
-        pedido.save()
-
-    return HttpResponse(status=200)
 
 @login_required
 def agregar_cliente(request):

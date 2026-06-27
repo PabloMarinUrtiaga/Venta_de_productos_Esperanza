@@ -198,7 +198,6 @@
 
     .badge-transferencia { background: #EFF6FF; color: #1565C0; border: 1px solid #93C5FD; }
     .badge-efectivo      { background: #F0FFF6; color: #1a7a45; border: 1px solid var(--verde); }
-    .badge-mercadopago   { background: #EFF6FF; color: #0070F3; border: 1px solid #93C5FD; }
 
     .badge-retiro    { background: #FFF5E0; color: #854F0B; border: 1px solid var(--amarillo); }
     .badge-domicilio { background: #F0FFF6; color: #1a7a45; border: 1px solid var(--verde); }
@@ -274,8 +273,6 @@
               <span class="badge-pago badge-transferencia">🏦 Transferencia</span>
             {% elif pedido.pago == 'efectivo' %}
               <span class="badge-pago badge-efectivo">💵 Efectivo</span>
-            {% else %}
-              <span class="badge-pago badge-mercadopago">💙 MercadoPago</span>
             {% endif %}
           </span>
         </div>

@@ -173,11 +173,6 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
-# Mercado Pago
-
-MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
-MP_PUBLIC_KEY =  os.environ.get('MP_PUBLIC_KEY')
-MP_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

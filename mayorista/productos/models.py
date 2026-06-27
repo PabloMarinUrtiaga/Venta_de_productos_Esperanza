@@ -42,7 +42,6 @@ class Pedido(models.Model):
     PAGO_CHOICES = [
         ('transferencia', 'Transferencia bancaria'),
         ('efectivo',      'Efectivo'),
-        ('mercadopago',   'MercadoPago'),
     ]
     ESTADOS_PEDIDO = [
     ('pendiente_pago', 'Pendiente de pago'),
@@ -78,14 +77,6 @@ class Pedido(models.Model):
     # Notas generales
     notas         = models.TextField(blank=True)
     
-    #Mercado Pago
-    mp_preference_id = models.CharField(max_length=255,blank=True,null=True)
-
-    mp_payment_id = models.CharField(max_length=255,blank=True,null=True)
-
-    pagado = models.BooleanField(default=False)
-
-    fecha_pago = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Pedido #{self.id} — {self.nombre} {self.apellido} [{self.estado}]"

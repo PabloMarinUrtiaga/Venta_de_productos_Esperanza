@@ -7,7 +7,7 @@ from productos.views import (home, lista_productos, agregar_al_carrito, sincroni
                              agregar_producto, eliminar_producto, 
                              editar_precio, repetir_pedido, compra_exitosa,
                              cambiar_estado, cambiar_stock_ajax, stock_actual,
-                             mp_webhook, editar_stock, editar_oferta, editar_categoria,
+                            editar_stock, editar_oferta, editar_categoria,
                              editar_imagen,agregar_cliente,eliminar_cliente, crear_pedido,factura_pedido)
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
@@ -43,7 +43,6 @@ urlpatterns = [
     path('panel/producto/<int:producto_id>/precio/', editar_precio, name='editar_precio'),
     path('repetir-pedido/', repetir_pedido, name='repetir_pedido'),
     path('compra-exitosa/<int:pedido_id>/', compra_exitosa, name='compra_exitosa'),
-    path('webhook/mercadopago/', mp_webhook),
     path('editar-stock/<int:producto_id>/',editar_stock,name='editar_stock'),
     path('editar-oferta/<int:producto_id>/',editar_oferta,name='editar_oferta'),
      path('editar-categoria/<int:producto_id>/', editar_categoria, name='editar_categoria'),

@@ -192,7 +192,7 @@
                   {% elif pedido.estado == 'entregado' %}✅ Entregado
                   {% endif %}
             </span>
-              {% if pedido.pago == 'transferencia' %}🏦 Transferencia{% elif pedido.pago == 'efectivo' %}💵 Efectivo{% else %}💙 MercadoPago{% endif %}
+              {% if pedido.pago == 'transferencia' %}🏦 Transferencia{% elif pedido.pago == 'efectivo' %}💵 Efectivo{% endif %}
             </div>
             <div class="pedido-hist-total">${{ pedido.total }}</div>
             <a href="/pedido/{{ pedido.id }}/" class="btn-ver">🔍 Ver detalle</a>
