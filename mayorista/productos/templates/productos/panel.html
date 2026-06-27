@@ -306,33 +306,32 @@
     <div class="panel-titulo">⚙️ Panel interno</div>
 
     <!-- ── AGREGAR PRODUCTO ── -->
-    <div class="panel-section">
-      <div class="panel-section-header">➕ Agregar producto</div>
-      <div class="panel-section-body">
-        <form method="POST" action="{% url 'agregar_producto' %}" class="form-inline" enctype="multipart/form-data">
-          {% csrf_token %}
-          <input type="text"   name="nombre" placeholder="Nombre del producto" required/>
-          <input type="number" name="precio" placeholder="Precio" step="0.01" required/>
-          <input type="number" name="stock"  placeholder="Stock inicial" required/>
+<div class="panel-section">
+  <div class="panel-section-header">➕ Agregar producto</div>
+  <div class="panel-section-body">
+    <form method="POST" action="{% url 'agregar_producto' %}" class="form-inline" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="text"   name="nombre" placeholder="Nombre del producto" required/>
+      <input type="text"   name="precio" placeholder="Precio (ej: 24.420,83)" required style="flex:1; min-width:140px;"/>
+      <input type="number" name="stock"  placeholder="Stock inicial" required/>
+      <input type="text"   name="precio_mayorista"   placeholder="Precio mayorista (ej: 24.420,83)" style="flex:1; min-width:140px;"/>
+      <input type="number" name="cantidad_mayorista" placeholder="Cant. mayorista" step="1" style="flex:1; min-width:140px;"/>
 
-          <input type="number" name="precio_mayorista"   placeholder="Precio mayorista" step="0.01" style="flex:1; min-width:140px;"/>
-          <input type="number" name="cantidad_mayorista" placeholder="Cant. mayorista"  step="1"    style="flex:1; min-width:140px;"/>
+      <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
+        <option value="">Categoría...</option>
+        <option value="Lácteos">Lácteos</option>
+        <option value="Gaseosas">Gaseosas</option>
+        <option value="Aperitivos">Aperitivos</option>
+        <option value="Almacén">Almacén</option>
+        <option value="Bebidas Alcohólicas">Bebidas Alcohólicas</option>
+      </select>
 
-          <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
-            <option value="">Categoría...</option>
-            <option value="Lácteos">Lácteos</option>
-            <option value="Enlatados">Gaseosas</option>
-            <option value="Cereales">Aperitivos</option>
-            <option value="Snacks">Almacén</option>
-            <option value="Condimentos">Bebidas Alcohólica</option>
-          </select>
+      <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="flex:1; min-width:140px; font-size:0.85rem;"/>
 
-          <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="flex:1; min-width:140px; font-size:0.85rem;"/>
-
-          <button type="submit" class="btn-sm btn-primary-sm">Agregar producto</button>
-        </form>
-      </div>
-    </div>
+      <button type="submit" class="btn-sm btn-primary-sm">Agregar producto</button>
+    </form>
+  </div>
+</div>
 
     <!-- ── PRODUCTOS ── -->
     <div class="panel-section">
@@ -453,7 +452,7 @@
                   <option value="Gaseosas"   {% if producto.categoria == 'Gaseosas' %}selected{% endif %}>Gaseosas</option>
                   <option value="Aperitivos"    {% if producto.categoria == 'Aperitivos' %}selected{% endif %}>Aperitivos</option>
                   <option value="Almacén"      {% if producto.categoria == 'Almacén' %}selected{% endif %}>Almacén</option>
-                  <option value="Bebidas Alcohólica" {% if producto.categoria == 'Bebidas Alcohólica' %}selected{% endif %}>Bebidas Alcohólica</option>
+                  <option value="Bebidas Alcohólicas" {% if producto.categoria == 'Bebidas Alcohólicas' %}selected{% endif %}>Bebidas Alcohólicas</option>
                 </select>
               </form>
 

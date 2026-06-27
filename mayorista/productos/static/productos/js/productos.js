@@ -5,10 +5,10 @@
 
 const EMOJIS_CATEGORIA = {
   'Lácteos':     '🥛',
-  'Enlatados':   '🥫',
-  'Cereales':    '🌾',
-  'Snacks':      '🍪',
-  'Condimentos': '🫙',
+  'Gaseosas':    '🥤',
+  'Aperitivos':  '🥪',
+  'Almacén':     '📦',
+  'Bebidas Alcohólicas': '🍷',
   'default':     '🛒',
 };
 
@@ -248,14 +248,14 @@ async function cargarProductos() {
     todosLosProductos = [
       { id: 1, nombre: 'Leche Entera 1L',       precio: '350.00', stock: 150, categoria: 'Lácteos' },
       { id: 2, nombre: 'Queso Cremoso 500g',     precio: '980.00', stock: 45,  categoria: 'Lácteos' },
-      { id: 3, nombre: 'Atún al Natural x3',     precio: '1250.00',stock: 80,  categoria: 'Enlatados' },
-      { id: 4, nombre: 'Arvejas en Lata 400g',   precio: '420.00', stock: 12,  categoria: 'Enlatados' },
-      { id: 5, nombre: 'Arroz Largo Fino 1kg',   precio: '580.00', stock: 200, categoria: 'Cereales' },
-      { id: 6, nombre: 'Avena Instantánea 500g', precio: '490.00', stock: 3,   categoria: 'Cereales' },
-      { id: 7, nombre: 'Galletitas Dulces x3',   precio: '760.00', stock: 60,  categoria: 'Snacks' },
-      { id: 8, nombre: 'Papas Fritas 200g',      precio: '680.00', stock: 18,  categoria: 'Snacks' },
-      { id: 9, nombre: 'Aceite de Girasol 900ml',precio: '1100.00',stock: 90,  categoria: 'Condimentos' },
-      { id:10, nombre: 'Mayonesa 500g',           precio: '870.00', stock: 35,  categoria: 'Condimentos' },
+      { id: 3, nombre: 'Atún al Natural x3',     precio: '1250.00',stock: 80,  categoria: 'Gaseosas' },
+      { id: 4, nombre: 'Arvejas en Lata 400g',   precio: '420.00', stock: 12,  categoria: 'Gaseosas' },
+      { id: 5, nombre: 'Arroz Largo Fino 1kg',   precio: '580.00', stock: 200, categoria: 'Aperitivos' },
+      { id: 6, nombre: 'Avena Instantánea 500g', precio: '490.00', stock: 3,   categoria: 'Aperitivos' },
+      { id: 7, nombre: 'Galletitas Dulces x3',   precio: '760.00', stock: 60,  categoria: 'Almacén' },
+      { id: 8, nombre: 'Papas Fritas 200g',      precio: '680.00', stock: 18,  categoria: 'Almacén' },
+      { id: 9, nombre: 'Aceite de Girasol 900ml',precio: '1100.00',stock: 90,  categoria: 'Bebidas Alcohólicas' },
+      { id:10, nombre: 'Mayonesa 500g',           precio: '870.00', stock: 35,  categoria: 'Bebidas Alcohólicas' },
     ];
     filtrarYRender();
     console.warn('Usando datos de demostración. Conectá el backend Django para datos reales.');
