@@ -1098,19 +1098,18 @@ def panel(request):
 @login_required
 def agregar_producto(request):
 
-    # 🔒 Solo admin
     if not request.user.is_staff:
         messages.error(request, 'No autorizado')
         return redirect('/')
 
-    # 🔒 Solo POST
     if request.method != 'POST':
         messages.error(request, 'Método inválido')
         return redirect('/panel/')
 
     nombre = request.POST.get('nombre', '').strip()
     precio = request.POST.get('precio', '').strip()
-    stock = request.POST.get('stock', '').strip()
+    precio = precio.replace('.', '').replace(',', '.')
+    stock  = request.POST.get('stock', '').strip()
 
     # ─────────────────────────────
     # NOMBRE
@@ -1120,20 +1119,16 @@ def agregar_producto(request):
         messages.error(request, 'Ingresá un nombre')
         return redirect('/panel/')
 
-    # 🔒 Longitud
     if len(nombre) > 200:
         messages.error(request, 'Nombre demasiado largo')
         return redirect('/panel/')
 
-    # 🔒 Mínimo caracteres
     if len(nombre) < 2:
         messages.error(request, 'Nombre demasiado corto')
         return redirect('/panel/')
 
-    # 🔒 Evitar espacios absurdos
     nombre = ' '.join(nombre.split())
 
-    # 🔒 Evitar duplicados exactos
     if Producto.objects.filter(nombre__iexact=nombre).exists():
         messages.error(request, 'Ese producto ya existe')
         return redirect('/panel/')
@@ -1147,30 +1142,23 @@ def agregar_producto(request):
         return redirect('/panel/')
 
     try:
-
         precio = Decimal(precio)
-
     except InvalidOperation:
-
         messages.error(request, 'Precio inválido')
         return redirect('/panel/')
 
-    # 🔒 NaN / infinito
     if not precio.is_finite():
         messages.error(request, 'Precio inválido')
         return redirect('/panel/')
 
-    # 🔒 Precio mínimo
     if precio <= 0:
         messages.error(request, 'Precio inválido')
         return redirect('/panel/')
 
-    # 🔒 Precio absurdo
     if precio > Decimal('99999999'):
         messages.error(request, 'Precio demasiado grande')
         return redirect('/panel/')
 
-    # 🔒 Máximo 2 decimales
     if precio.as_tuple().exponent < -2:
         messages.error(request, 'Máximo 2 decimales')
         return redirect('/panel/')
@@ -1184,30 +1172,25 @@ def agregar_producto(request):
         return redirect('/panel/')
 
     try:
-
         stock = int(stock)
-
     except ValueError:
-
         messages.error(request, 'Stock inválido')
         return redirect('/panel/')
 
-    # 🔒 Stock negativo
     if stock < 0:
         messages.error(request, 'El stock no puede ser negativo')
         return redirect('/panel/')
 
-    # 🔒 Evitar stocks absurdos
     if stock > 999999:
         messages.error(request, 'Stock demasiado grande')
         return redirect('/panel/')
-    
+
     # ─────────────────────────────
     # PRECIO MAYORISTA
     # ─────────────────────────────
 
-    precio_mayorista   = request.POST.get('precio_mayorista', '').strip()
-    cantidad_mayorista = request.POST.get('cantidad_mayorista', '').strip()
+    precio_mayorista = request.POST.get('precio_mayorista', '').strip()
+    precio_mayorista = precio_mayorista.replace('.', '').replace(',', '.')
 
     precio_mayorista_val   = None
     cantidad_mayorista_val = None
@@ -1223,9 +1206,7 @@ def agregar_producto(request):
             messages.error(request, 'Precio mayorista inválido')
             return redirect('/panel/')
 
-        if precio_mayorista_val >= precio:
-            messages.error(request, 'El precio mayorista debe ser menor al precio unitario')
-            return redirect('/panel/')
+    cantidad_mayorista = request.POST.get('cantidad_mayorista', '').strip()
 
     if cantidad_mayorista:
         try:
@@ -1243,9 +1224,9 @@ def agregar_producto(request):
     # ─────────────────────────────
 
     categoria = request.POST.get('categoria', '').strip()
-
-    categorias_validas = ['Lácteos', 'Enlatados', 'Cereales', 'Snacks', 'Condimentos']
-
+    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas']
+    categoria = request.POST.get('categoria', '').strip()
+    print('CATEGORIA RECIBIDA:', repr(categoria))
     if categoria and categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
         return redirect('/panel/')
@@ -1255,16 +1236,13 @@ def agregar_producto(request):
     # ─────────────────────────────
 
     imagen_archivo = request.FILES.get('imagen')
-    imagen_base64 = None
+    imagen_base64  = None
 
     if imagen_archivo:
-
-        # 🔒 Límite de tamaño del archivo subido (5MB antes de comprimir)
         if imagen_archivo.size > 5 * 1024 * 1024:
             messages.error(request, 'La imagen no puede superar los 5MB')
             return redirect('/panel/')
 
-        # 🔒 Tipos permitidos
         tipos_validos = ['image/jpeg', 'image/png', 'image/webp']
         if imagen_archivo.content_type not in tipos_validos:
             messages.error(request, 'Formato de imagen no permitido (solo JPG, PNG o WEBP)')
@@ -1291,11 +1269,7 @@ def agregar_producto(request):
         activo=True
     )
 
-    messages.success(
-        request,
-        f'Producto "{nombre}" agregado correctamente'
-    )
-
+    messages.success(request, f'Producto "{nombre}" agregado correctamente')
     return redirect('/panel/')
 
 #Eliminar productos
@@ -1677,7 +1651,7 @@ def editar_categoria(request, producto_id):
         return redirect('/panel/')
 
     categoria = request.POST.get('categoria', '').strip()
-    categorias_validas = ['Lácteos', 'Enlatados', 'Cereales', 'Snacks', 'Condimentos']
+    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas']
 
     if categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')

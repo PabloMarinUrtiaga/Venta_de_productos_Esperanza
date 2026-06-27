@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='producto',
             name='categoria',
-            field=models.CharField(blank=True, choices=[('Lácteos', 'Lácteos'), ('Enlatados', 'Enlatados'), ('Cereales', 'Cereales'), ('Snacks', 'Snacks'), ('Condimentos', 'Condimentos')], max_length=50),
+            field=models.CharField(blank=True, choices=[('Lácteos', 'Lácteos'), ('Enlatados', 'Enlatados'), ('Cereales', 'Cereales'), ('Snacks', 'Snacks'), ('Bebidas Alcohólicas', 'Bebidas Alcohólicas')], max_length=50),
         ),
     ]
