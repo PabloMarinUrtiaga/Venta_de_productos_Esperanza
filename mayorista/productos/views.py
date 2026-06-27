@@ -367,7 +367,7 @@ def checkout(request):
             if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
                 packs    = cantidad // producto.cantidad_mayorista
                 resto    = cantidad % producto.cantidad_mayorista
-                subtotal = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * precio_base)
+                subtotal = (packs * producto.precio_mayorista) + (resto * precio_base)
             else:
                 subtotal = precio_base * cantidad
 
@@ -531,7 +531,7 @@ def checkout(request):
                     if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
                         packs    = cantidad // producto.cantidad_mayorista
                         resto    = cantidad % producto.cantidad_mayorista
-                        subtotal = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * precio_base)
+                        subtotal = (packs * producto.precio_mayorista) + (resto * precio_base)
                     else:
                         subtotal = precio_base * cantidad
 
@@ -1914,7 +1914,7 @@ def crear_pedido(request, user_id):
                 if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
                     packs    = cantidad // producto.cantidad_mayorista
                     resto    = cantidad % producto.cantidad_mayorista
-                    subtotal = (packs * producto.cantidad_mayorista * producto.precio_mayorista) + (resto * precio_base)
+                    subtotal = (packs * producto.precio_mayorista) + (resto * precio_base)
                 else:
                     subtotal = precio_base * cantidad
 
