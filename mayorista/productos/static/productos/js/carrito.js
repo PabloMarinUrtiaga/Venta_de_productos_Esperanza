@@ -67,7 +67,7 @@ function calcularSubtotal(prod, cantidad) {
   const packsCompletos = Math.floor(cantidad / cantMay);
   const resto          = cantidad % cantMay;
 
-  return (packsCompletos * cantMay * precioMay) + (resto * precioNormal);
+  return (packsCompletos * precioMay) + (resto * precioNormal);
 }
 
 // ── Eliminar producto ────────────────────────
