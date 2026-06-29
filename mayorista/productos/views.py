@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from urllib3 import request
 from .models import Producto, Pedido, PedidoItem, Perfil
 from django.conf import settings
 from django.db import transaction, models
@@ -336,6 +337,7 @@ def repetir_pedido(request):
 def checkout(request):
 
     carrito = request.session.get('carrito', {})
+    
 
     # ─────────────────────────────
     # VALIDAR CARRITO
@@ -786,15 +788,9 @@ def registro(request):
             last_name=last_name,
         )
 
-        ultimo_numero = Perfil.objects.aggregate(
-            maximo=models.Max('numero_cliente')
-        )['maximo'] or 0
-
-        Perfil.objects.create(
-            user=user,
-            numero_cliente=ultimo_numero + 1,
-            telefono=telefono,
-        )
+        perfil, _ = Perfil.objects.get_or_create(user=user)
+        perfil.telefono = telefono
+        perfil.save()
 
         return render(request, 'productos/login.html', {
             'exito_registro': '¡Cuenta creada! Ya podés ingresar.',
@@ -988,7 +984,7 @@ def panel(request):
         productos = productos.filter(stock__lte=0)
 
     productos = productos.order_by('nombre')
-    paginator = Paginator(productos, 20)
+    paginator = Paginator(productos, 3)
     pagina = request.GET.get('pagina', 1)
     productos = paginator.get_page(pagina)
 
@@ -1181,7 +1177,7 @@ def agregar_producto(request):
     # ─────────────────────────────
 
     categoria = request.POST.get('categoria', '').strip()
-    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas']
+    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza']
     categoria = request.POST.get('categoria', '').strip()
     if categoria and categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
@@ -1607,7 +1603,7 @@ def editar_categoria(request, producto_id):
         return redirect('/panel/')
 
     categoria = request.POST.get('categoria', '').strip()
-    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas']
+    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza']
 
     if categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
@@ -1795,7 +1791,16 @@ def factura_pedido(request, pedido_id):
         'pedido': pedido,
         'items': items,
     })
-
+@login_required
+def eliminar_pedido(request, pedido_id):
+    if not request.user.is_staff:
+        return redirect('/')
+    if request.method != 'POST':
+        return redirect('/panel/')
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    pedido.delete()
+    messages.success(request, f'Pedido #{pedido_id} eliminado')
+    return redirect('/panel/')
 
 #Errores
 def error_404(request, exception=None):

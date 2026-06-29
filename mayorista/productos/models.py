@@ -10,6 +10,7 @@ CATEGORIA_CHOICES = [
     ('Aperitivos',           'Aperitivos'),
     ('Almacén',              'Almacén'),
     ('Bebidas Alcohólicas',  'Bebidas Alcohólicas'),
+    ('Limpieza', 'Limpieza'),
 ]
 
 

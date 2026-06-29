@@ -163,7 +163,7 @@ function renderCarrito() {
     const subtotal     = calcularSubtotal(prod, cantidad);
     total += subtotal;
 
-    const emoji = { 'Lácteos':'🥛','Gaseosas':'🥤','Aperitivos':'🥪','Almacén':'📦','Bebidas Alcohólicas':'🍷' }[prod.categoria] || '🛒';
+    const emoji = { 'Lácteos':'🥛','Gaseosas':'🥤','Aperitivos':'🥪','Almacén':'📦','Bebidas Alcohólicas':'🍷', 'Limpieza': '🧹', }[prod.categoria] || '🛒';
 
     // Info de precio mayorista aplicado
     let precioInfoHtml = `<span style="color:var(--gris); font-size:0.82rem;">× $${precioNormal.toFixed(2)}</span>`;

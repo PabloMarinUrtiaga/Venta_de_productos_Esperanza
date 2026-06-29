@@ -84,11 +84,7 @@
 
     <a href="/historial/{{ cliente.id }}/" class="btn-volver">⬅ Volver al historial</a>
 
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="alerta alerta-{{ msg.tags }}" style="margin-bottom:1rem;">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
+    
 
     <form method="POST">
       {% csrf_token %}
@@ -98,8 +94,15 @@
           <div class="producto-fila">
             <div>
               <div class="producto-nombre">{{ producto.nombre }}</div>
-              <div class="producto-precio">${{ producto.precio }} · Stock: {{ producto.stock }}</div>
-            </div>
+              <div class="producto-precio">
+                ${{ producto.precio }} · Stock: {{ producto.stock }}
+              </div>
+              {% if producto.precio_mayorista and producto.cantidad_mayorista %}
+                <div style="color:#1565C0; font-size:0.82rem; font-weight:700; margin-top:0.2rem;">
+                   💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
+                </div>
+              {% endif %}
+</div>
             <input
               type="number"
               name="cantidad_{{ producto.id }}"

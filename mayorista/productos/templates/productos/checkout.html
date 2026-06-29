@@ -321,7 +321,7 @@
     {% if pedido.pago == 'transferencia' %}
 
     <a
-      href="https://wa.me/5491138876882?text=Hola!%20Te%20env%C3%ADo%20el%20comprobante.%0A%0A*Pedido%20%23{{ pedido.id }}*%0ANombre%3A%20{{ pedido.nombre }}%20{{ pedido.apellido }}%0AM%C3%A9todo%20de%20pago%3A%20Transferencia%20(Billetera%20virtual%20o%20bancaria)%0AEntrega%3A%20{% if pedido.entrega == 'domicilio' %}Env%C3%ADo%20a%20domicilio%20-%20{{ pedido.direccion }}{% if pedido.piso_depto %}%2C%20{{ pedido.piso_depto }}{% endif %}%2C%20{{ pedido.localidad }}%20(CP%3A%20{{ pedido.codigo_postal }}){% else %}Retiro%20en%20el%20local{% endif %}%0ATotal%3A%20%24{{ total }}%0AAdjunt%C3%A1%20el%20comprobante%20de%20pago%20a%20continuaci%C3%B3n."
+      href="https://wa.me/5491138876882?text=Hola!%20Te%20env%C3%ADo%20el%20comprobante.%0A%0A*Pedido%20%23{{ pedido.id }}*%0ANombre%3A%20{{ pedido.nombre }}%20{{ pedido.apellido }}%0AM%C3%A9todo%20de%20pago%3A%20Transferencia%20(Billetera%20virtual%20o%20bancaria)%0AEntrega%3A%20{% if pedido.entrega == 'domicilio' %}Env%C3%ADo%20a%20domicilio%20-%20{{ pedido.direccion }}{% if pedido.piso_depto %}%2C%20{{ pedido.piso_depto }}{% endif %}%2C%20{{ pedido.localidad }}%20(CP%3A%20{{ pedido.codigo_postal }}){% else %}Retiro%20en%20el%20local{% endif %}%0ATotal%3A%20%24{{ total }}{% if pedido.notas %}%0ANotas%3A%20{{ pedido.notas }}{% endif %}%0AAdjunt%C3%A1%20el%20comprobante%20de%20pago%20a%20continuaci%C3%B3n."
       target="_blank"
       class="btn-whatsapp"
     >
@@ -369,6 +369,7 @@
       a.addEventListener('click', function() {
         toggle.classList.remove('abierto');
         links.classList.remove('abierto');
+        localStorage.removeItem('carrito');
       });
     });
   })();

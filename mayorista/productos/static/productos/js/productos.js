@@ -10,6 +10,7 @@ const EMOJIS_CATEGORIA = {
   'Almacén':     '📦',
   'Bebidas Alcohólicas': '🍷',
   'default':     '🛒',
+  'Limpieza': '🧹',
 };
 
 // ── Estado ──────────────────────────────────

@@ -452,12 +452,12 @@ z|
 
             <p>
               <strong>Alias:</strong>
-              ESPERANZA.DIST
+              PRODUCTOS.ESPERANZA
             </p>
 
             <p>
               <strong>Titular:</strong>
-              Distribuidora Esperanza S.A.
+              ANGELA EDITH WOERNER
             </p>
 
             <p style="margin-top:0.5rem;">
@@ -561,6 +561,30 @@ z|
     btn.disabled = true;
   });
 </script>
+<script>
+  function togglePago(metodo) {
+    document.querySelectorAll('.opcion-card').forEach(el => {
+      if (el.id === 'label-' + metodo) {
+        el.classList.add('seleccionado');
+      } else if (el.id.startsWith('label-transferencia') || el.id.startsWith('label-efectivo')) {
+        el.classList.remove('seleccionado');
+      }
+    });
 
+    const infoTransferencia = document.getElementById('info-transferencia');
+    if (metodo === 'transferencia') {
+      infoTransferencia.classList.add('visible');
+    } else {
+      infoTransferencia.classList.remove('visible');
+    }
+  }
+
+  function toggleEntrega(tipo) {
+    document.getElementById('label-retiro').classList.toggle('seleccionado', tipo === 'retiro');
+    document.getElementById('label-domicilio').classList.toggle('seleccionado', tipo === 'domicilio');
+    const seccion = document.getElementById('seccion-direccion');
+    seccion.classList.toggle('visible', tipo === 'domicilio');
+  }
+</script>
 </body>
 </html>

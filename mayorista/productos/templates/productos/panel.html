@@ -324,6 +324,8 @@
         <option value="Aperitivos">Aperitivos</option>
         <option value="Almacén">Almacén</option>
         <option value="Bebidas Alcohólicas">Bebidas Alcohólicas</option>
+        <option value="Limpieza">Limpieza</option>
+
       </select>
 
       <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="flex:1; min-width:140px; font-size:0.85rem;"/>
@@ -621,6 +623,11 @@
             </form>
 
             <a href="/pedido/{{ pedido.id }}/" class="btn-sm btn-primary-sm">🔍 Ver detalle</a>
+            <form method="POST" action="{% url 'eliminar_pedido' pedido.id %}" onsubmit="return confirm('¿Eliminar pedido #{{ pedido.id }}?')" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn-sm btn-danger-sm">🗑 Eliminar</button>
+            </form>
+
           </div>
         {% empty %}
           <p style="color:var(--gris); font-weight:600; text-align:center; padding:1rem;">No hay pedidos en este período.</p>

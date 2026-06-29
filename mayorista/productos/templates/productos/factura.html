@@ -175,7 +175,7 @@
       <p>Alias: ESPERANZA.DIST</p>
     </div>
     <div class="factura-meta">
-      <h2>Factura #{{ pedido.id }}</h2>
+      <h2>NOTA DE PEDIDO #{{ pedido.id }}</h2>
       <p>Fecha: {{ pedido.fecha|date:"d/m/Y — H:i" }}</p>
       <p>Estado: {{ pedido.get_estado_display }}</p>
     </div>
@@ -197,13 +197,14 @@
         <span>{{ pedido.telefono|default:"—" }}</span>
       </div>
       <div>
-        <label>Método de pago</label>
-        <span>
-          {% if pedido.pago == 'transferencia' %}Transferencia
-          {% elif pedido.pago == 'efectivo' %}Efectivo
-          
-        </span>
-      </div>
+  <label>Método de pago</label>
+  <span>
+    {% if pedido.pago == 'transferencia' %}Transferencia
+    {% elif pedido.pago == 'efectivo' %}Efectivo
+    {% else %}MercadoPago{% endif %}
+  </span>
+</div>
+
       <div>
         <label>Entrega</label>
         <span>
