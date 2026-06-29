@@ -18,7 +18,31 @@ import re, json, base64, io
 from django.core.paginator import Paginator
 from PIL import Image
 
+from urllib.parse import urlencode
 
+
+# ── Helper: redirect al panel preservando posición ───────────────────────────
+def redirect_panel(request):
+    params = {}
+
+    pagina = request.POST.get('_pagina', '').strip()
+    if pagina.isdigit() and 1 <= int(pagina) <= 9999:
+        params['pagina'] = pagina
+
+    q = request.POST.get('_q', '').strip()
+    if q and len(q) <= 100 and re.match(r'^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ ,.\-_]+$', q):
+        params['q'] = q
+
+    filtro = request.POST.get('_filtro', '').strip()
+    if filtro in ('bajo_stock', 'stock_critico', 'sin_stock'):
+        params['filtro'] = filtro
+
+    url = '/panel/'
+    if params:
+        url += '?' + urlencode(params)
+    url += '#productos'
+
+    return redirect(url)
 
 
 def comprimir_imagen(archivo):
@@ -1057,7 +1081,7 @@ def agregar_producto(request):
 
     if request.method != 'POST':
         messages.error(request, 'Método inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     nombre = request.POST.get('nombre', '').strip()
     precio = request.POST.get('precio', '').strip()
@@ -1070,21 +1094,21 @@ def agregar_producto(request):
 
     if not nombre:
         messages.error(request, 'Ingresá un nombre')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if len(nombre) > 200:
         messages.error(request, 'Nombre demasiado largo')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if len(nombre) < 2:
         messages.error(request, 'Nombre demasiado corto')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     nombre = ' '.join(nombre.split())
 
     if Producto.objects.filter(nombre__iexact=nombre).exists():
         messages.error(request, 'Ese producto ya existe')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # ─────────────────────────────
     # PRECIO
@@ -1092,29 +1116,29 @@ def agregar_producto(request):
 
     if not precio:
         messages.error(request, 'Ingresá un precio')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
         precio = Decimal(precio)
     except InvalidOperation:
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if not precio.is_finite():
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if precio <= 0:
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if precio > Decimal('99999999'):
         messages.error(request, 'Precio demasiado grande')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if precio.as_tuple().exponent < -2:
         messages.error(request, 'Máximo 2 decimales')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # ─────────────────────────────
     # STOCK
@@ -1122,21 +1146,21 @@ def agregar_producto(request):
 
     if not stock:
         messages.error(request, 'Ingresá el stock')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
         stock = int(stock)
     except ValueError:
         messages.error(request, 'Stock inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if stock < 0:
         messages.error(request, 'El stock no puede ser negativo')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if stock > 999999:
         messages.error(request, 'Stock demasiado grande')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # ─────────────────────────────
     # PRECIO MAYORISTA
@@ -1153,11 +1177,11 @@ def agregar_producto(request):
             precio_mayorista_val = Decimal(precio_mayorista)
         except InvalidOperation:
             messages.error(request, 'Precio mayorista inválido')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         if precio_mayorista_val <= 0:
             messages.error(request, 'Precio mayorista inválido')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
     cantidad_mayorista = request.POST.get('cantidad_mayorista', '').strip()
 
@@ -1166,11 +1190,11 @@ def agregar_producto(request):
             cantidad_mayorista_val = int(cantidad_mayorista)
         except ValueError:
             messages.error(request, 'Cantidad mayorista inválida')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         if cantidad_mayorista_val < 2:
             messages.error(request, 'La cantidad mayorista debe ser al menos 2')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
     # ─────────────────────────────
     # CATEGORÍA
@@ -1181,7 +1205,7 @@ def agregar_producto(request):
     categoria = request.POST.get('categoria', '').strip()
     if categoria and categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # ─────────────────────────────
     # IMAGEN
@@ -1193,18 +1217,18 @@ def agregar_producto(request):
     if imagen_archivo:
         if imagen_archivo.size > 5 * 1024 * 1024:
             messages.error(request, 'La imagen no puede superar los 5MB')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         tipos_validos = ['image/jpeg', 'image/png', 'image/webp']
         if imagen_archivo.content_type not in tipos_validos:
             messages.error(request, 'Formato de imagen no permitido (solo JPG, PNG o WEBP)')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         imagen_base64 = comprimir_imagen(imagen_archivo)
 
         if imagen_base64 is None:
             messages.error(request, 'No se pudo procesar la imagen')
-            return redirect('/panel/')
+            return redirect_panel(request)
 
     # ─────────────────────────────
     # CREAR PRODUCTO
@@ -1222,7 +1246,7 @@ def agregar_producto(request):
     )
 
     messages.success(request, f'Producto "{nombre}" agregado correctamente')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #Eliminar productos
 
@@ -1233,13 +1257,13 @@ def eliminar_producto(request, producto_id):
         return redirect('/')
 
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto = get_object_or_404(Producto, id=producto_id)
 
     producto.delete()
 
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #Editar precio
 
@@ -1254,7 +1278,7 @@ def editar_precio(request, producto_id):
     # 🔒 Solo POST
     if request.method != 'POST':
         messages.error(request, 'Método inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto = get_object_or_404(Producto, id=producto_id)
 
@@ -1263,12 +1287,12 @@ def editar_precio(request, producto_id):
     # 🔒 Obligatorio
     if not nuevo_precio:
         messages.error(request, 'Ingresá un precio')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Longitud máxima
     if len(nuevo_precio) > 20:
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
 
@@ -1277,32 +1301,32 @@ def editar_precio(request, producto_id):
     except InvalidOperation:
 
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 No NaN / infinitos
     if not nuevo_precio.is_finite():
         messages.error(request, 'Precio inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Precio mínimo
     if nuevo_precio <= 0:
         messages.error(request, 'El precio debe ser mayor a 0')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Evitar precios absurdos
     if nuevo_precio > Decimal('99999999'):
         messages.error(request, 'Precio demasiado grande')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Máximo 2 decimales
     if nuevo_precio.as_tuple().exponent < -2:
         messages.error(request, 'Máximo 2 decimales')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Evitar cambios innecesarios
     if producto.precio == nuevo_precio:
         messages.warning(request, 'El precio ya es ese')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto.precio = nuevo_precio
     producto.save(update_fields=['precio'])
@@ -1312,10 +1336,7 @@ def editar_precio(request, producto_id):
         f'Precio actualizado para {producto.nombre}'
     )
 
-    pagina = request.POST.get('pagina', '1')
-    if not pagina.isdigit():
-        pagina = '1'
-    return redirect(f'/panel/?pagina={pagina}')
+    return redirect_panel(request)
 
 @login_required
 def cambiar_estado(request, pedido_id):
@@ -1328,7 +1349,7 @@ def cambiar_estado(request, pedido_id):
         if nuevo_estado in estados_validos:
             pedido.estado = nuevo_estado
             pedido.save()
-        return redirect('/panel/')
+        return redirect_panel(request)
     return JsonResponse({'ok': False})
 
 @login_required
@@ -1408,7 +1429,7 @@ def editar_stock(request, producto_id):
     # 🔒 Solo POST
     if request.method != 'POST':
         messages.error(request, 'Método inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto = get_object_or_404(
         Producto,
@@ -1423,12 +1444,12 @@ def editar_stock(request, producto_id):
     # 🔒 Obligatorio
     if nuevo_stock == '':
         messages.error(request, 'Ingresá un stock')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Longitud máxima
     if len(nuevo_stock) > 10:
         messages.error(request, 'Stock inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
 
@@ -1437,22 +1458,22 @@ def editar_stock(request, producto_id):
     except ValueError:
 
         messages.error(request, 'Stock inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Nunca negativo
     if nuevo_stock < 0:
         messages.error(request, 'El stock no puede ser negativo')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Límite máximo
     if nuevo_stock > 999999:
         messages.error(request, 'Stock demasiado grande')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     # 🔒 Evitar cambios innecesarios
     if producto.stock == nuevo_stock:
         messages.warning(request, 'El stock ya es ese')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto.stock = nuevo_stock
 
@@ -1463,7 +1484,7 @@ def editar_stock(request, producto_id):
         f'Stock actualizado para {producto.nombre}'
     )
 
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #OFERTAS:
 @login_required
@@ -1478,7 +1499,7 @@ def editar_oferta(request, producto_id):
     # 🔒 Solo POST
     if request.method != 'POST':
         messages.error(request, 'Método inválido')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto = get_object_or_404(
         Producto,
@@ -1510,7 +1531,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'Precio inválido'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         try:
 
@@ -1524,7 +1545,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'Precio inválido'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         # 🔒 NaN / infinito
         if not precio_oferta.is_finite():
@@ -1532,7 +1553,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'Precio inválido'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         # 🔒 Mayor a 0
         if precio_oferta <= 0:
@@ -1540,7 +1561,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'La oferta debe ser mayor a 0'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         # 🔒 Máximo 2 decimales
         if precio_oferta.as_tuple().exponent < -2:
@@ -1548,7 +1569,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'Máximo 2 decimales'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         # 🔒 Menor al precio normal
         if precio_oferta >= producto.precio:
@@ -1556,7 +1577,7 @@ def editar_oferta(request, producto_id):
                 request,
                 'La oferta debe ser menor al precio normal'
             )
-            return redirect('/panel/')
+            return redirect_panel(request)
 
         producto.precio_oferta = precio_oferta
 
@@ -1574,7 +1595,7 @@ def editar_oferta(request, producto_id):
             request,
             'Primero cargá un precio de oferta'
         )
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto.save(update_fields=[
         'precio_oferta',
@@ -1586,7 +1607,7 @@ def editar_oferta(request, producto_id):
         f'Oferta actualizada para {producto.nombre}'
     )
 
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #CATALOGO
 @login_required
@@ -1597,26 +1618,26 @@ def editar_categoria(request, producto_id):
         return redirect('/')
 
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
         producto = Producto.objects.get(id=producto_id)
     except Producto.DoesNotExist:
         messages.error(request, 'Producto no encontrado')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     categoria = request.POST.get('categoria', '').strip()
     categorias_validas = ['Lácteos', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza' , 'Bebidas']
 
     if categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto.categoria = categoria
     producto.save(update_fields=['categoria'])
 
     messages.success(request, 'Categoría actualizada')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #Cambiar imagen
 @login_required
@@ -1627,40 +1648,40 @@ def editar_imagen(request, producto_id):
         return redirect('/')
 
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
         producto = Producto.objects.get(id=producto_id)
     except Producto.DoesNotExist:
         messages.error(request, 'Producto no encontrado')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     imagen_archivo = request.FILES.get('imagen')
 
     if not imagen_archivo:
         messages.error(request, 'Seleccioná una imagen')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if imagen_archivo.size > 5 * 1024 * 1024:
         messages.error(request, 'La imagen no puede superar los 5MB')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     tipos_validos = ['image/jpeg', 'image/png', 'image/webp']
     if imagen_archivo.content_type not in tipos_validos:
         messages.error(request, 'Formato de imagen no permitido (solo JPG, PNG o WEBP)')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     imagen_base64 = comprimir_imagen(imagen_archivo)
 
     if imagen_base64 is None:
         messages.error(request, 'No se pudo procesar la imagen')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     producto.imagen_base64 = imagen_base64
     producto.save(update_fields=['imagen_base64'])
 
     messages.success(request, 'Imagen actualizada')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 
 
@@ -1671,7 +1692,7 @@ def agregar_cliente(request):
         return redirect('/')
 
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     username = request.POST.get('username', '').strip()
     nombre   = request.POST.get('nombre_completo', '').strip()
@@ -1679,11 +1700,11 @@ def agregar_cliente(request):
 
     if not username or not nombre or not telefono:
         messages.error(request, 'Completá todos los campos')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     if User.objects.filter(username=username).exists():
         messages.error(request, 'Ya existe un cliente con ese usuario')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     try:
         user = User.objects.create_user(
@@ -1694,10 +1715,10 @@ def agregar_cliente(request):
         Perfil.objects.filter(user=user).update(telefono=telefono)
     except Exception as e:
         messages.error(request, f'Error: {e}')
-        return redirect('/panel/')
+        return redirect_panel(request)
 
     messages.success(request, f'Cliente {nombre} creado. Contraseña temporal: esperanza1234')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 
 @login_required
@@ -1705,14 +1726,14 @@ def eliminar_cliente(request, user_id):
     if not request.user.is_staff:
         return redirect('/')
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
     try:
         user = User.objects.get(id=user_id)
         user.delete()
         messages.success(request, 'Cliente eliminado')
     except User.DoesNotExist:
         messages.error(request, 'Cliente no encontrado')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 @login_required
 def crear_pedido(request, user_id):
@@ -1799,11 +1820,11 @@ def eliminar_pedido(request, pedido_id):
     if not request.user.is_staff:
         return redirect('/')
     if request.method != 'POST':
-        return redirect('/panel/')
+        return redirect_panel(request)
     pedido = get_object_or_404(Pedido, id=pedido_id)
     pedido.delete()
     messages.success(request, f'Pedido #{pedido_id} eliminado')
-    return redirect('/panel/')
+    return redirect_panel(request)
 
 #Errores
 def error_404(request, exception=None):

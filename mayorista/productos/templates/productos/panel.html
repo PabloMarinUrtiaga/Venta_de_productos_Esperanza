@@ -311,6 +311,11 @@
   <div class="panel-section-body">
     <form method="POST" action="{% url 'agregar_producto' %}" class="form-inline" enctype="multipart/form-data">
       {% csrf_token %}
+
+      <input type="hidden" name="_pagina" value="{{ productos.number }}">
+      <input type="hidden" name="_q" value="{{ request.GET.q }}">
+      <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
       <input type="text"   name="nombre" placeholder="Nombre del producto" required/>
       <input type="text"   name="precio" placeholder="Precio (ej: 24.420,83)" required style="flex:1; min-width:140px;"/>
       <input type="number" name="stock"  placeholder="Stock inicial" required/>
@@ -337,7 +342,7 @@
 
     <!-- ── PRODUCTOS ── -->
     <div class="panel-section">
-      <div class="panel-section-header"><span>📦 Productos</span></div>
+      <div class="panel-section-header" id="productos"><span>📦 Productos</span></div>
       <div class="panel-section-body">
 
         <form method="GET" class="buscador-panel">
@@ -417,14 +422,14 @@
 
                 {% csrf_token %}
 
+                <input type="hidden" name="_pagina" value="{{ productos.number }}">
+                <input type="hidden" name="_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
                 <input type="number"
                       name="precio"
                       placeholder="Nuevo precio"
                       step="0.01">
-                  
-                <input type="hidden"
-                 name="pagina"
-                value="{{ request.GET.pagina|default:1 }}">
 
                 <button type="submit" class="btn-sm btn-success-sm">
                   Actualizar
@@ -435,6 +440,11 @@
              <!-- EDITAR OFERTA -->
              <form method="POST" action="{% url 'editar_oferta' producto.id %}" class="form-precio">
               {% csrf_token %}
+
+              <input type="hidden" name="_pagina" value="{{ productos.number }}">
+              <input type="hidden" name="_q" value="{{ request.GET.q }}">
+              <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
               <input type="number"
                     name="precio_oferta"
                     placeholder="Precio oferta"
@@ -452,6 +462,11 @@
               <!-- EDITAR CATEGORÍA -->
               <form method="POST" action="{% url 'editar_categoria' producto.id %}" class="form-precio">
                 {% csrf_token %}
+
+                <input type="hidden" name="_pagina" value="{{ productos.number }}">
+                <input type="hidden" name="_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
                 <select name="categoria" onchange="this.form.submit()" style="padding:0.45rem 0.7rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:600; background:var(--blanco); color:var(--oscuro); width:120px;">
                   <option value="">Categoría...</option>
                   <option value="Lácteos"     {% if producto.categoria == 'Lácteos' %}selected{% endif %}>Lácteos</option>
@@ -466,6 +481,11 @@
               <!-- EDITAR IMAGEN -->
               <form method="POST" action="{% url 'editar_imagen' producto.id %}" class="form-precio" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <input type="hidden" name="_pagina" value="{{ productos.number }}">
+                <input type="hidden" name="_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
                 <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" style="width:120px; font-size:0.75rem;">
                 <button type="submit" class="btn-sm btn-success-sm">📷</button>
               </form>
@@ -497,6 +517,10 @@
 
                 {% csrf_token %}
 
+                <input type="hidden" name="_pagina" value="{{ productos.number }}">
+                <input type="hidden" name="_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
                 <input type="number"
                       name="stock"
                       placeholder="Nuevo stock"
@@ -514,6 +538,10 @@
                     onsubmit="return confirm('¿Seguro que querés eliminar {{ producto.nombre }}?')">
 
                 {% csrf_token %}
+
+                <input type="hidden" name="_pagina" value="{{ productos.number }}">
+                <input type="hidden" name="_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
 
                 <button type="submit" class="btn-sm btn-danger-sm">
                   🗑 Eliminar
@@ -554,6 +582,11 @@
   <div class="panel-section-body">
     <form method="POST" action="{% url 'agregar_cliente' %}" class="form-inline">
       {% csrf_token %}
+
+      <input type="hidden" name="_pagina" value="{{ productos.number }}">
+      <input type="hidden" name="_q" value="{{ request.GET.q }}">
+      <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
       <input type="text" name="username" placeholder="Usuario (sin espacios)" required/>
       <input type="text" name="nombre_completo" placeholder="Nombre completo" required/>
       <input type="text" name="telefono" placeholder="Teléfono" required/>
@@ -581,6 +614,11 @@
         <div class="cliente-total">${{ c.total_gastado|default:"0" }}</div>
         <form method="POST" action="{% url 'eliminar_cliente' c.user__id %}" onsubmit="return confirm('¿Eliminar a {{ c.user__username }}?')">
           {% csrf_token %}
+
+          <input type="hidden" name="_pagina" value="{{ productos.number }}">
+          <input type="hidden" name="_q" value="{{ request.GET.q }}">
+          <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
           <button type="submit" class="btn-sm btn-danger-sm">🗑 Eliminar</button>
         </form>
       </div>
@@ -618,6 +656,11 @@
             <!-- Selector de estado -->
             <form method="POST" action="/cambiar-estado/{{ pedido.id }}/">
               {% csrf_token %}
+
+              <input type="hidden" name="_pagina" value="{{ productos.number }}">
+              <input type="hidden" name="_q" value="{{ request.GET.q }}">
+              <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
               <select name="estado" class="select-estado" onchange="this.form.submit()">
                 <option value="pendiente_pago"  {% if pedido.estado == 'pendiente_pago' %}selected{% endif %}>⏳ Pendiente de pago</option>
                 <option value="en_preparacion" {% if pedido.estado == 'en_preparacion' %}selected{% endif %}>🔧 En preparación</option>
@@ -630,6 +673,11 @@
             <a href="/pedido/{{ pedido.id }}/" class="btn-sm btn-primary-sm">🔍 Ver detalle</a>
             <form method="POST" action="{% url 'eliminar_pedido' pedido.id %}" onsubmit="return confirm('¿Eliminar pedido #{{ pedido.id }}?')" style="display:inline;">
               {% csrf_token %}
+
+              <input type="hidden" name="_pagina" value="{{ productos.number }}">
+              <input type="hidden" name="_q" value="{{ request.GET.q }}">
+              <input type="hidden" name="_filtro" value="{{ request.GET.filtro }}">
+
               <button type="submit" class="btn-sm btn-danger-sm">🗑 Eliminar</button>
             </form>
 
