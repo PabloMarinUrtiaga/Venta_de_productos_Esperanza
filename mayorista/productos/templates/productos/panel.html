@@ -421,6 +421,10 @@
                       name="precio"
                       placeholder="Nuevo precio"
                       step="0.01">
+                  
+                <input type="hidden"
+                 name="pagina"
+                value="{{ request.GET.pagina|default:1 }}">
 
                 <button type="submit" class="btn-sm btn-success-sm">
                   Actualizar

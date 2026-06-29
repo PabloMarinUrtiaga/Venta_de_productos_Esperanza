@@ -1312,7 +1312,10 @@ def editar_precio(request, producto_id):
         f'Precio actualizado para {producto.nombre}'
     )
 
-    return redirect('/panel/')
+    pagina = request.POST.get('pagina', '1')
+    if not pagina.isdigit():
+        pagina = '1'
+    return redirect(f'/panel/?pagina={pagina}')
 
 @login_required
 def cambiar_estado(request, pedido_id):
