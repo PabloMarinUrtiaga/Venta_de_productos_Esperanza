@@ -6,11 +6,12 @@ from django.dispatch import receiver
 # ── Producto ──────────────────────────────────
 CATEGORIA_CHOICES = [
     ('Lácteos',              'Lácteos'),
-    ('Gaseosas',             'Gaseosas'),
     ('Aperitivos',           'Aperitivos'),
     ('Almacén',              'Almacén'),
     ('Bebidas Alcohólicas',  'Bebidas Alcohólicas'),
     ('Limpieza', 'Limpieza'),
+    ('Bebidas', 'Bebidas'),
+
 ]
 
 

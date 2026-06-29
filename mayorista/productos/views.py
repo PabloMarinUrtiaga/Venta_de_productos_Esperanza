@@ -1177,7 +1177,7 @@ def agregar_producto(request):
     # ─────────────────────────────
 
     categoria = request.POST.get('categoria', '').strip()
-    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza']
+    categorias_validas = ['Lácteos', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza', 'Bebidas']
     categoria = request.POST.get('categoria', '').strip()
     if categoria and categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')
@@ -1603,7 +1603,7 @@ def editar_categoria(request, producto_id):
         return redirect('/panel/')
 
     categoria = request.POST.get('categoria', '').strip()
-    categorias_validas = ['Lácteos', 'Gaseosas', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza']
+    categorias_validas = ['Lácteos', 'Aperitivos', 'Almacén', 'Bebidas Alcohólicas', 'Limpieza' , 'Bebidas']
 
     if categoria not in categorias_validas:
         messages.error(request, 'Categoría inválida')

@@ -320,11 +320,11 @@
       <select name="categoria" required style="padding:0.65rem 1rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.9rem; font-weight:600; background:var(--fondo); color:var(--oscuro); flex:1; min-width:140px;">
         <option value="">Categoría...</option>
         <option value="Lácteos">Lácteos</option>
-        <option value="Gaseosas">Gaseosas</option>
         <option value="Aperitivos">Aperitivos</option>
         <option value="Almacén">Almacén</option>
         <option value="Bebidas Alcohólicas">Bebidas Alcohólicas</option>
         <option value="Limpieza">Limpieza</option>
+        <option value="Bebidas">Bebidas</option>
 
       </select>
 
@@ -451,10 +451,11 @@
                 <select name="categoria" onchange="this.form.submit()" style="padding:0.45rem 0.7rem; border:2px solid #e0e0e0; border-radius:var(--radio-sm); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:600; background:var(--blanco); color:var(--oscuro); width:120px;">
                   <option value="">Categoría...</option>
                   <option value="Lácteos"     {% if producto.categoria == 'Lácteos' %}selected{% endif %}>Lácteos</option>
-                  <option value="Gaseosas"   {% if producto.categoria == 'Gaseosas' %}selected{% endif %}>Gaseosas</option>
                   <option value="Aperitivos"    {% if producto.categoria == 'Aperitivos' %}selected{% endif %}>Aperitivos</option>
                   <option value="Almacén"      {% if producto.categoria == 'Almacén' %}selected{% endif %}>Almacén</option>
                   <option value="Bebidas Alcohólicas" {% if producto.categoria == 'Bebidas Alcohólicas' %}selected{% endif %}>Bebidas Alcohólicas</option>
+                  <option value="Limpieza"     {% if producto.categoria == 'Limpieza' %}selected{% endif %}>Limpieza</option>
+                  <option value="Bebidas"     {% if producto.categoria == 'Bebidas' %}selected{% endif %}>Bebidas</option>
                 </select>
               </form>
 
