@@ -343,20 +343,22 @@ body {
 
 .producto-card-img {
   background: linear-gradient(135deg, #fff5e0, #ffe0b2);
-  height: 160px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 3.5rem;
-  position: relative;
-  overflow: hidden;
 }
 
 .producto-card-img img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 8px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .badge-stock {
