@@ -114,11 +114,11 @@ function renderProductos(lista) {
       }
 
       if (tieneMayorista) {
-        precioHtml += `
-          <div style="font-size:0.82rem; font-weight:800; color:var(--azul); margin-bottom:0.4rem;">
-            💼 $${parseFloat(p.precio_mayorista).toFixed(2)}/u comprando ${p.cantidad_mayorista} o más
-          </div>`;
-      }
+  precioHtml += `
+    <div style="font-size:0.82rem; font-weight:800; color:var(--azul); margin-bottom:0.4rem;">
+      💼 $${parseFloat(p.precio_mayorista).toFixed(2)} comprando por mayorista
+    </div>`;
+}
 
     const botonesHtml = p.precio_mayorista && p.cantidad_mayorista
       ? `<div style="display:flex; gap:0.5rem;">
