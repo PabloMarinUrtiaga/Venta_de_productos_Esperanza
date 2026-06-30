@@ -617,17 +617,17 @@ def checkout(request):
                 else:
                     subtotal = precio_base * cantidad
 
-                    precio_unitario = subtotal / cantidad
+                precio_unitario = subtotal / cantidad
 
-                    PedidoItem.objects.create(
+                PedidoItem.objects.create(
                     pedido=pedido,
                     producto=producto,
                     cantidad=cantidad,
                     precio=precio_unitario,
-            )
+                )
 
-            producto.stock -= cantidad
-            producto.save(update_fields=['stock'])
+                producto.stock -= cantidad
+                producto.save(update_fields=['stock'])
 
         # LIMPIAR CARRITO
         request.session['carrito'] = {}
