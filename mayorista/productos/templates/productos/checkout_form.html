@@ -259,7 +259,6 @@
   <button class="navbar-toggle" id="navbar-toggle" aria-label="Abrir menú">
       <span></span><span></span><span></span>
   </button>
-z|
   <ul class="navbar-links" id="navbar-links">
     <li><a href="/productos/">Productos</a></li>
     <li><a href="/carrito/" class="navbar-carrito">🛒 Carrito</a></li>
@@ -277,6 +276,7 @@ z|
 <div class="seccion-header" style="margin-top:2rem;">
   <h2>Finalizar compra</h2>
 </div>
+
 
 <form method="POST" action="/checkout/" id="form-checkout">
   {% csrf_token %}
@@ -332,8 +332,8 @@ z|
 
           <div class="opcion-grid">
 
-            <label class="opcion-card seleccionado" id="label-retiro">
-              <input type="radio" name="entrega" value="retiro" checked onchange="toggleEntrega('retiro')">
+            <label class="opcion-card" id="label-retiro">
+              <input type="radio" name="entrega" value="retiro" onchange="toggleEntrega('retiro')">
 
               <span class="opcion-icono">🏪</span>
 
@@ -396,12 +396,11 @@ z|
           <div class="opcion-grid opcion-grid-2">
 
             <!-- TRANSFERENCIA -->
-            <label class="opcion-card seleccionado" id="label-transferencia">
+            <label class="opcion-card" id="label-transferencia">
               <input
                 type="radio"
                 name="pago"
                 value="transferencia"
-                checked
                 onchange="togglePago('transferencia')"
               />
 
@@ -441,7 +440,7 @@ z|
           </div>
 
           <!-- INFO TRANSFERENCIA -->
-          <div class="info-transferencia visible" id="info-transferencia">
+          <div class="info-transferencia" id="info-transferencia">
 
             <p>📋 Realizá la transferencia a:</p>
 

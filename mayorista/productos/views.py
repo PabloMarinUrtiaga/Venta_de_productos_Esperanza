@@ -359,6 +359,10 @@ def repetir_pedido(request):
 
 @login_required
 def checkout(request):
+    
+    # Limpiar mensajes acumulados de otras páginas (carrito, productos, etc.)
+    # para que el checkout solo muestre sus propios mensajes
+    list(messages.get_messages(request))
 
     carrito = request.session.get('carrito', {})
     
