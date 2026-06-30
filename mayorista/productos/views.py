@@ -608,21 +608,26 @@ def checkout(request):
             # CREAR ITEMS
             # ─────────────────────────────
             for producto, cantidad in productos_bloqueados:
+                precio_base = producto.precio_oferta if (producto.oferta_activa and producto.precio_oferta) else producto.precio
 
-                precio_real = producto.precio_oferta if (producto.oferta_activa and producto.precio_oferta) else producto.precio
+                if producto.precio_mayorista and producto.cantidad_mayorista and cantidad >= producto.cantidad_mayorista:
+                    packs    = cantidad // producto.cantidad_mayorista
+                    resto    = cantidad % producto.cantidad_mayorista
+                    subtotal = (packs * producto.precio_mayorista) + (resto * precio_base)
+                else:
+                    subtotal = precio_base * cantidad
 
-                PedidoItem.objects.create(
+                    precio_unitario = subtotal / cantidad
+
+                    PedidoItem.objects.create(
                     pedido=pedido,
                     producto=producto,
                     cantidad=cantidad,
-                    precio=precio_real,
-                )
+                    precio=precio_unitario,
+            )
 
-                
-
-                producto.stock -= cantidad
-
-                producto.save(update_fields=['stock'])
+            producto.stock -= cantidad
+            producto.save(update_fields=['stock'])
 
         # LIMPIAR CARRITO
         request.session['carrito'] = {}
