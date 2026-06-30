@@ -375,5 +375,10 @@
   })();
 </script>
 
+<script>
+  // El pedido ya se confirmó en el servidor: vaciar el carrito local sí o sí
+  localStorage.removeItem('carrito');
+</script>
+
 </body>
 </html>
