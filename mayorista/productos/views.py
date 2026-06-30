@@ -1824,15 +1824,33 @@ def factura_pedido(request, pedido_id):
         'pedido': pedido,
         'items': items,
     })
+
 @login_required
 def eliminar_pedido(request, pedido_id):
     if not request.user.is_staff:
         return redirect('/')
     if request.method != 'POST':
         return redirect_panel(request)
+
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    pedido.delete()
-    messages.success(request, f'Pedido #{pedido_id} eliminado')
+
+    with transaction.atomic():
+        if pedido.estado != 'entregado':
+            items = PedidoItem.objects.select_related('producto').filter(pedido=pedido)
+
+            for item in items:
+                producto = item.producto
+                if producto:
+                    producto.stock += item.cantidad
+                    producto.save(update_fields=['stock'])
+
+            mensaje = f'Pedido #{pedido_id} eliminado y stock restaurado'
+        else:
+            mensaje = f'Pedido #{pedido_id} eliminado (sin restaurar stock, ya estaba entregado)'
+
+        pedido.delete()
+
+    messages.success(request, mensaje)
     return redirect_panel(request)
 
 #Errores
