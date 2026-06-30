@@ -580,11 +580,18 @@ z|
   }
 
   function toggleEntrega(tipo) {
-    document.getElementById('label-retiro').classList.toggle('seleccionado', tipo === 'retiro');
-    document.getElementById('label-domicilio').classList.toggle('seleccionado', tipo === 'domicilio');
-    const seccion = document.getElementById('seccion-direccion');
-    seccion.classList.toggle('visible', tipo === 'domicilio');
-  }
+  document.getElementById('label-retiro').classList.toggle('seleccionado', tipo === 'retiro');
+  document.getElementById('label-domicilio').classList.toggle('seleccionado', tipo === 'domicilio');
+  
+  const seccion = document.getElementById('seccion-direccion');
+  seccion.classList.toggle('visible', tipo === 'domicilio');
+
+  const obligatorios = ['direccion', 'localidad', 'codigo_postal'];
+  obligatorios.forEach(function(nombre) {
+    const input = document.querySelector(`input[name="${nombre}"]`);
+    if (input) input.required = tipo === 'domicilio';
+  });
+}
 </script>
 </body>
 </html>
