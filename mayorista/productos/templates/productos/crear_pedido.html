@@ -7,52 +7,27 @@
   <title>Crear pedido — Esperanza</title>
   <link rel="stylesheet" href="{% static 'productos/css/estilos.css' %}"/>
   <style>
-    .crear-pedido-wrap {
-      max-width: 860px;
+    .crear-wrap {
+      max-width: 1100px;
       margin: 2.5rem auto;
       padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      align-items: start;
     }
-    .crear-pedido-titulo {
+    @media (max-width: 700px) {
+      .crear-wrap { grid-template-columns: 1fr; }
+    }
+    .crear-titulo {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 2rem;
       letter-spacing: 2px;
       color: var(--oscuro);
       border-left: 6px solid var(--rojo);
       padding-left: 0.8rem;
-      margin-bottom: 1.5rem;
-    }
-    .producto-fila {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 1rem;
-      align-items: center;
-      padding: 0.9rem 1.4rem;
-      border-bottom: 1px solid #f0f0ec;
-      background: var(--blanco);
-    }
-    .producto-fila:last-child { border-bottom: none; }
-    .producto-nombre { font-weight: 800; color: var(--oscuro); }
-    .producto-precio { color: var(--rojo); font-weight: 800; }
-    .cantidad-input {
-      width: 70px;
-      padding: 0.4rem 0.6rem;
-      border: 2px solid #e0e0da;
-      border-radius: var(--radio-sm);
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      text-align: center;
-    }
-    .btn-crear {
-      background: var(--rojo);
-      color: white;
-      border: none;
-      border-radius: var(--radio-sm);
-      padding: 0.8rem 2rem;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      grid-column: 1 / -1;
     }
     .btn-volver {
       display: inline-block;
@@ -65,9 +40,99 @@
       font-weight: 800;
       font-size: 0.9rem;
       text-decoration: none;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
+      grid-column: 1 / -1;
     }
-    .seccion { background: var(--blanco); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; margin-bottom: 1.5rem; }
+    .buscador-crear {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .buscador-crear input {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border: 2px solid #e0e0da;
+      border-radius: var(--radio-sm);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .seccion { background: var(--blanco); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
+    .producto-fila {
+      display: grid;
+      grid-template-columns: 1fr 80px;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem 1.4rem;
+      border-bottom: 1px solid #f0f0ec;
+    }
+    .producto-fila:last-child { border-bottom: none; }
+    .producto-fila.oculto { display: none; }
+    .producto-nombre { font-weight: 800; color: var(--oscuro); }
+    .producto-precio { color: var(--rojo); font-weight: 800; font-size: 0.9rem; }
+    .cantidad-input {
+      width: 70px;
+      padding: 0.4rem 0.6rem;
+      border: 2px solid #e0e0da;
+      border-radius: var(--radio-sm);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      text-align: center;
+    }
+    /* RESUMEN DERECHA */
+    .resumen-crear {
+      background: var(--oscuro);
+      border-radius: var(--radio);
+      padding: 1.5rem;
+      color: var(--blanco);
+      position: sticky;
+      top: 88px;
+    }
+    .resumen-crear h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--amarillo);
+      margin-bottom: 1rem;
+    }
+    .resumen-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-weight: 600;
+    }
+    .resumen-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0 1.2rem;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .resumen-total span:last-child {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--amarillo);
+    }
+    .btn-crear {
+      width: 100%;
+      background: linear-gradient(135deg, var(--rojo), var(--naranja));
+      color: white;
+      border: none;
+      border-radius: var(--radio-sm);
+      padding: 1rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .resumen-vacio {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 1rem 0;
+    }
   </style>
 </head>
 <body>
@@ -78,47 +143,107 @@
     </a>
   </nav>
 
-  <div class="crear-pedido-wrap">
+  <form method="POST" id="form-pedido">
+    {% csrf_token %}
 
-    <div class="crear-pedido-titulo">Crear pedido para {{ cliente.username }}</div>
+    <div class="crear-wrap">
 
-    <a href="/historial/{{ cliente.id }}/" class="btn-volver">⬅ Volver al historial</a>
+      <div class="crear-titulo">Crear pedido para {{ cliente.username }}</div>
+      <a href="/historial/{{ cliente.id }}/" class="btn-volver">⬅ Volver al historial</a>
 
-    
+      <!-- IZQUIERDA -->
+      <div>
+        <div class="buscador-crear">
+          <input type="text" id="buscador" placeholder="🔍 Buscar producto..." oninput="filtrarProductos()"/>
+        </div>
 
-    <form method="POST">
-      {% csrf_token %}
-
-      <div class="seccion">
-        {% for producto in productos %}
-          <div class="producto-fila">
-            <div>
-              <div class="producto-nombre">{{ producto.nombre }}</div>
-              <div class="producto-precio">
-                ${{ producto.precio }} · Stock: {{ producto.stock }}
+        <div class="seccion">
+          {% for producto in productos %}
+            <div class="producto-fila" id="fila-{{ producto.id }}" data-nombre="{{ producto.nombre|lower }}">
+              <div>
+                <div class="producto-nombre">{{ producto.nombre }}</div>
+                <div class="producto-precio">${{ producto.precio }} · Stock: {{ producto.stock }}</div>
+                {% if producto.precio_mayorista and producto.cantidad_mayorista %}
+                  <div style="color:#1565C0; font-size:0.82rem; font-weight:700; margin-top:0.2rem;">
+                    💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
+                  </div>
+                {% endif %}
               </div>
-              {% if producto.precio_mayorista and producto.cantidad_mayorista %}
-                <div style="color:#1565C0; font-size:0.82rem; font-weight:700; margin-top:0.2rem;">
-                   💼 Mayorista: ${{ producto.precio_mayorista }} x {{ producto.cantidad_mayorista }}u
-                </div>
-              {% endif %}
-</div>
-            <input
-              type="number"
-              name="cantidad_{{ producto.id }}"
-              value="0"
-              min="0"
-              max="{{ producto.stock }}"
-              class="cantidad-input"
-            />
-          </div>
-        {% endfor %}
+              <input
+                type="number"
+                name="cantidad_{{ producto.id }}"
+                value="0"
+                min="0"
+                max="{{ producto.stock }}"
+                class="cantidad-input"
+                data-id="{{ producto.id }}"
+                data-nombre="{{ producto.nombre }}"
+                data-precio="{{ producto.precio }}"
+                data-precio-mayorista="{{ producto.precio_mayorista|default:'' }}"
+                data-cantidad-mayorista="{{ producto.cantidad_mayorista|default:'' }}"
+                oninput="actualizarResumen()"
+              />
+            </div>
+          {% endfor %}
+        </div>
       </div>
 
-      <button type="submit" class="btn-crear">✅ Confirmar pedido</button>
-    </form>
+      <!-- DERECHA -->
+      <div class="resumen-crear">
+        <h3>📦 Pedido</h3>
+        <div id="resumen-items">
+          <div class="resumen-vacio">Agregá productos para ver el resumen</div>
+        </div>
+        <div class="resumen-total">
+          <span>Total</span>
+          <span id="resumen-total">$0,00</span>
+        </div>
+        <button type="submit" class="btn-crear">✅ Confirmar pedido</button>
+      </div>
 
-  </div>
+    </div>
+  </form>
+
+  <script>
+    function filtrarProductos() {
+      const q = document.getElementById('buscador').value.toLowerCase();
+      document.querySelectorAll('.producto-fila').forEach(function(fila) {
+        const nombre = fila.dataset.nombre || '';
+        fila.classList.toggle('oculto', !nombre.includes(q));
+      });
+    }
+
+    function actualizarResumen() {
+      const inputs = document.querySelectorAll('.cantidad-input');
+      let html = '';
+      let total = 0;
+
+      inputs.forEach(function(input) {
+        const cantidad = parseInt(input.value) || 0;
+        if (cantidad <= 0) return;
+
+        const nombre = input.dataset.nombre;
+        const precio = parseFloat(input.dataset.precio);
+        const precioMay = parseFloat(input.dataset.precioMayorista) || 0;
+        const cantMay   = parseInt(input.dataset.cantidadMayorista) || 0;
+
+        let subtotal;
+        if (precioMay && cantMay && cantidad >= cantMay) {
+          const packs = Math.floor(cantidad / cantMay);
+          const resto = cantidad % cantMay;
+          subtotal = (packs * precioMay) + (resto * precio);
+        } else {
+          subtotal = precio * cantidad;
+        }
+
+        total += subtotal;
+        html += `<div class="resumen-item"><span>${nombre} ×${cantidad}</span><span>$${subtotal.toFixed(2).replace('.', ',')}</span></div>`;
+      });
+
+      document.getElementById('resumen-items').innerHTML = html || '<div class="resumen-vacio">Agregá productos para ver el resumen</div>';
+      document.getElementById('resumen-total').textContent = '$' + total.toFixed(2).replace('.', ',');
+    }
+  </script>
 
 </body>
 </html>

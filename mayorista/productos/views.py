@@ -1820,9 +1820,19 @@ def factura_pedido(request, pedido_id):
         return HttpResponse(status=403)
     pedido = get_object_or_404(Pedido, id=pedido_id)
     items = PedidoItem.objects.filter(pedido=pedido).select_related('producto')
+    
+    # Obtener teléfono del perfil del cliente
+    telefono_perfil = ''
+    if pedido.user:
+        try:
+            telefono_perfil = Perfil.objects.get(user=pedido.user).telefono
+        except Perfil.DoesNotExist:
+            telefono_perfil = pedido.telefono
+
     return render(request, 'productos/factura.html', {
         'pedido': pedido,
         'items': items,
+        'telefono_perfil': telefono_perfil or pedido.telefono,
     })
 
 @login_required
