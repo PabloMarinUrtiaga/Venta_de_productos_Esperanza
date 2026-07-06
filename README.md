@@ -35,8 +35,8 @@ Plataforma de e-commerce mayorista B2B para la venta de productos de la Distribu
 ### Panel de administración
 - Gestión de productos: agregar, editar precio, stock, categoría, imagen y ofertas
 - Paginación con persistencia de página al realizar acciones
-- Gestión de clientes: listado con métricas, agregar y eliminar
-- Gestión de pedidos: cambio de estado, eliminación con restauración de stock
+- Gestión de clientes: creacion y eliminaicon de clientes
+- Gestión de pedidos: cambio de estado, eliminación con restauración de stock y creacion de pedidos
 - Filtros de stock: bajo stock, stock crítico, sin stock
 - Búsqueda de productos y clientes
 
@@ -46,3 +46,4 @@ Plataforma de e-commerce mayorista B2B para la venta de productos de la Distribu
 - Factura/nota de pedido imprimible
 - Botón de envío de comprobante por WhatsApp (para pagos con transferencia)
 - Repetir último pedido
+
